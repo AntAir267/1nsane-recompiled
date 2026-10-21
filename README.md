@@ -43,9 +43,8 @@ Options > Enhanced Options; the ones that can change mid-race are in the pause m
   it. It holds everything needed but the game (the translator, a compiler and the runtime): it
   asks for your GOG copy (the GOG installer, or the folder it installed), checks it, builds the game
   on your computer once (about a minute), and plays it; after that it opens straight into the game.
-  It needs 64-bit Linux with glibc 2.38 or newer (Ubuntu 24.04, Debian 13, Fedora 39, Linux Mint
-  22 or later), a graphics driver with Vulkan 1.3, and about 1.5 GB free; the intro videos play
-  when ffmpeg is installed. `tools/release/linux.sh` makes it.
+  It needs 64-bit Linux from 2020 or later (glibc 2.31), a graphics driver with Vulkan 1.3, and
+  about 1.5 GB free; the intro videos play when ffmpeg is installed. `tools/release/linux.sh` makes it.
 - **Players (Windows):** a download is on its way; for now, build it as BUILDING.md says.
 - **Developers:** see [BUILDING.md](BUILDING.md).
 

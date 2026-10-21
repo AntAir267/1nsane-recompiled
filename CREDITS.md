@@ -71,8 +71,18 @@ Used alongside it:
 In the download, besides the program's own parts:
 
 - **Zig** (the C compiler that builds the game on your computer) — MIT licence. <https://ziglang.org>
-- **Python** and **PyInstaller** (the translator, packed as one program) — the PSF licence; the
-  PyInstaller bootloader, GPL with its exception for packed programs.
+- **Python** (the translator runs on it) — the PSF licence. On Windows it is packed as one
+  program with **PyInstaller** (its bootloader: GPL with its exception for packed programs),
+  together with the libraries Python uses there: libffi (MIT), mpdecimal (BSD), bzip2, xz,
+  Zstandard and zlib. On Linux it is a standalone build of CPython from
+  [python-build-standalone](https://github.com/astral-sh/python-build-standalone), with these
+  compiled in: OpenSSL (Apache 2.0), libffi and Expat (MIT), mpdecimal, libedit, Zstandard,
+  libuuid and bzip2 (BSD), XZ Utils (0BSD), zlib, ncurses (X11 licence), SQLite (public domain)
+  and HACL* (MIT).
+- Built into the game by Zig: LLVM's **libc++**, **libc++abi** and **libunwind** (Apache 2.0 with
+  the LLVM exception), and on Windows the **MinGW-w64** runtime (its own permissive licences).
+
+Each download's licenses/ folder holds each of these licences in full.
 
 ## Assets
 

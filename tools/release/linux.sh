@@ -58,10 +58,24 @@ for spec in vulkan:libvulkan.so.1 freetype:libfreetype.so.6 z:libz.so.1; do
     "$TOOLS/zcc" -shared -fPIC -o "$B/lib/stubs/lib$name.so" -Wl,-soname,"$so" "build/stub_$name.c"
 done
 
-echo "== the translator, frozen"
-"$ROOT/third_party/pack-venv/bin/pyinstaller" --onefile --name translate --paths tools --distpath build/rel-dist \
-    --workpath build/rel-pyi --specpath build/rel-pyi --log-level WARN tools/recomp.py
-cp build/rel-dist/translate "$B/"
+echo "== the translator: its Python files on a standalone Python (glibc 2.17) with Capstone"
+PYS=$ROOT/third_party/python-standalone/python
+[ -x "$PYS/bin/python3.14" ] || { echo "needs third_party/python-standalone (third_party/README.md)"; exit 1; }
+mkdir -p "$B/python/bin" "$B/python/lib" "$B/tools"
+cp -a "$PYS/bin/python3.14" "$B/python/bin/"            # (all of Python in one program: no libpython)
+tar -C "$PYS/lib" --exclude=test --exclude=idlelib --exclude=tkinter --exclude=turtledemo --exclude=ensurepip \
+    --exclude=pydoc_data --exclude='config-3.14-*' --exclude='site-packages/*' --exclude='_tkinter.*' \
+    --exclude='_dbm.*' -cf - python3.14 | tar -C "$B/python/lib" -xf -
+cp -r "$ROOT/third_party/pack-venv/lib/python3.14/site-packages/capstone" "$B/python/lib/python3.14/site-packages/"
+find "$B/python/lib/python3.14/site-packages/capstone" -name __pycache__ -prune -exec rm -r {} +
+cp tools/recomp.py tools/codegen.py tools/discover.py tools/pe.py tools/x86.py tools/fpustack.py "$B/tools/"
+cat > "$B/translate" <<'EOF2'
+#!/bin/sh
+# Game.exe to C: tools/recomp.py on the Python beside it (-E -s: none of the player's Python settings)
+H=$(dirname "$(readlink -f "$0")")
+exec "$H/python/bin/python3.14" -E -s -B "$H/tools/recomp.py" "$@"
+EOF2
+chmod +x "$B/translate"
 
 echo "== the launcher"
 "$TOOLS/zcc" -O2 -fPIE -pie -I"$SDL/include" -Igen -I/usr/include/freetype2 $SYSINC -o "$OUT/AppDir/usr/bin/1nsane-recompiled" \
@@ -80,7 +94,25 @@ rm -rf "$B/zig/doc"
   done; } > "$B/fanpack.txt"
 [ -x "$INNO" ] || { echo "needs third_party/innoextract (third_party/README.md): it unpacks the GOG installer"; exit 1; }
 cp "$INNO" "$B/innoextract"
-cp -r "$(dirname "$INNO")/license" "$B/innoextract-license"
+
+echo "== the licences (every part the download carries; CREDITS.md names them)"
+L=$B/licenses
+mkdir -p "$L"
+cp CREDITS.md LICENSE "$L/"
+cp assets/1nsanefont/README.md "$L/1nsaneFont-README.md"
+cp third_party/SDL3-*/LICENSE.txt "$L/SDL3-LICENSE.txt"
+cp third_party/FidelityFX-FSR2/LICENSE.txt "$L/FidelityFX-FSR2-LICENSE.txt"
+cp "$ZDIR/LICENSE" "$L/Zig-LICENSE.txt"
+for x in libcxx libcxxabi libunwind; do cp "$ZDIR/lib/$x/LICENSE.TXT" "$L/LLVM-$x-LICENSE.txt"; done
+cp -r "$(dirname "$INNO")/license" "$L/innoextract"
+cp "$ROOT"/third_party/pack-venv/lib/python3.14/site-packages/capstone-*.dist-info/LICENSE.TXT "$L/Capstone-LICENSE.txt"
+cp "$PYS/lib/python3.14/LICENSE.txt" "$L/Python-LICENSE.txt"
+cp /usr/share/doc/libpython3.14/copyright "$L/Python-copyright-details.txt"
+cp tools/release/python-builtins-NOTICE.txt "$L/Python-builtins-NOTICE.txt"
+for x in openssl:libssl3t64 expat:libexpat1 zlib:zlib1g bzip2:libbz2-1.0 xz:liblzma5 zstd:libzstd1 \
+         sqlite:libsqlite3-0 libedit:libedit2 ncurses:libncurses6 util-linux:libuuid1; do
+    cp "/usr/share/doc/${x#*:}/copyright" "$L/${x%%:*}-copyright.txt"
+done
 
 echo "== AppImage"
 A=$OUT/AppDir

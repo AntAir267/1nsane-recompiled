@@ -49,8 +49,14 @@ For the player download (tools/release/linux.sh), also:
   CMAKE_LIBRARY_PATH=/usr/lib/x86_64-linux-gnu, SDL_SHARED=OFF, SDL_STATIC=ON,
   SDL_X11_XSCRNSAVER=OFF, CMAKE_BUILD_TYPE=Release, CMAKE_INSTALL_PREFIX=sdl3-rel; then build
   and install.
-- pack-venv/: a Python virtual environment with PyInstaller (6.22) and Capstone (5.0.9), which
-  freezes the translator into one program.
+- python-standalone/: CPython 3.14.8 for any Linux with glibc 2.17 or later, from
+  github.com/astral-sh/python-build-standalone (release 20261020,
+  cpython-3.14.8+20261020-x86_64-unknown-linux-gnu-install_only_stripped.tar.gz, 36,606,645
+  bytes, sha256 b88a4ac994ac55c35a03a3672103618d5c5d5bf342db7b2093b8d328b6516b42, as its
+  SHA256SUMS lists), unpacked as python/. The download carries it, without Tk and the test
+  suite, to run the translator's Python files (this computer's own Python needs glibc 2.38).
+- pack-venv/: a Python virtual environment with Capstone (5.0.9; its manylinux build needs
+  glibc 2.14), whose package the download puts beside that Python, and PyInstaller (6.22).
 - appimagetool-x86_64.AppImage, from github.com/AppImage/appimagetool (continuous release), and
   appimage-runtime-x86_64, the runtime it puts at the front of an AppImage (it fetches one from
   github.com/AppImage/type2-runtime each time otherwise; this one was taken from the front of

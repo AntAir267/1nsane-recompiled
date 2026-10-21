@@ -115,9 +115,13 @@ done
 cp "$FB/ffmpeg.exe" "$B/bin/"
 
 echo "== the translator, frozen"
+# (without the network and OpenSSL, which the translator never uses)
 pyinstaller --onefile --name translate --paths tools --distpath build/rel-dist --workpath build/rel-pyi \
-    --specpath build/rel-pyi --log-level WARN tools/recomp.py
+    --specpath build/rel-pyi --log-level WARN --exclude-module ssl --exclude-module _ssl \
+    --exclude-module _hashlib --exclude-module socket tools/recomp.py
 cp build/rel-dist/translate.exe "$B/"
+# the libraries packed into it (for the licences)
+pyi-archive_viewer -l build/rel-dist/translate.exe | grep -oE '[A-Za-z0-9_.+-]+\.dll' | sort -u > "$R/translate-dlls.txt"
 
 echo "== the launcher"
 "$Z" cc -target $T -O2 -Igen -I"$R/inc" -o "$B/1nsane-recompiled.exe" launcher/launcher.c launcher/sha256.c \
@@ -137,12 +141,39 @@ PACK=https://github.com/AntAir267/1nsane-recompiled-fan-pack/releases/download/v
   done; } > "$B/fanpack.txt"
 cp "$INNO" "$B/innoextract.exe"
 cp -r "$(dirname "$INNO")/license" "$B/innoextract-license"
-cp "$FT/LICENSE.TXT" "$B/licenses/FreeType-LICENSE.txt"; cp "$FT/docs/FTL.TXT" "$B/licenses/FreeType-FTL.txt"
-cp "$FF/COPYING.LGPLv2.1" "$B/licenses/ffmpeg-COPYING.LGPLv2.1.txt"
+L=$B/licenses
+mkdir -p "$L/FreeType" "$L/FFmpeg" "$L/FidelityFX-FSR2" "$L/DLSS" "$L/Zig" "$L/Python"
+cp "$FT/LICENSE.TXT" "$FT/docs/FTL.TXT" "$L/FreeType/"
+cp "$FF/COPYING.LGPLv2.1" "$L/FFmpeg/"
 { echo "bin/ffmpeg.exe is FFmpeg 9.0.2 (LGPL 2.1 or later), built unchanged from its source release"
   echo "https://ffmpeg.org/releases/ffmpeg-9.0.2.tar.xz with: configure $(cat "$FB/configure-flags.txt")"; } \
-    > "$B/licenses/ffmpeg-SOURCE.txt"
-cp CREDITS.md LICENSE "$B/licenses/"
+    > "$L/FFmpeg/SOURCE.txt"
+# what MSYS2 built: bin/'s DLLs and programs (but our ffmpeg), lib/'s SDL3, zlib, libiconv, uuid, Vulkan's
+# loader; each package's own licence files
+for f in "$B"/bin/*; do
+    n=$(basename "$f")
+    [ "$n" = ffmpeg.exe ] || [ ! -e "/ucrt64/bin/$n" ] || echo "/ucrt64/bin/$n"
+done > "$R/msys2-files.txt"
+printf '/ucrt64/lib/%s\n' libSDL3.a libz.a libiconv.a libuuid.a libvulkan-1.dll.a >> "$R/msys2-files.txt"
+sed 's#^#/ucrt64/bin/#' "$R/translate-dlls.txt" >> "$R/msys2-files.txt"      # (and translate.exe's)
+for p in $(xargs pacman -Qqo < "$R/msys2-files.txt" | sort -u) mingw-w64-ucrt-x86_64-crt; do
+    s=${p#mingw-w64-ucrt-x86_64-}
+    if [ -d "/ucrt64/share/licenses/$s" ]; then mkdir -p "$L/$s"; cp -r "/ucrt64/share/licenses/$s/." "$L/$s/"
+    else echo "(no licence files in MSYS2's $p)"; fi
+done
+pacman -Q $(xargs pacman -Qqo < "$R/msys2-files.txt" | sort -u) > "$L/msys2-packages.txt"
+# lz4 ships none: its library's licence (lib/LICENSE in its source), BSD 2-clause
+[ -d "$L/lz4" ] || { mkdir -p "$L/lz4"; cp "$ROOT/tools/release/lz4-LICENSE.txt" "$L/lz4/LICENSE"; }
+# in translate.exe: Python, Capstone, PyInstaller's bootloader
+cp /ucrt64/lib/python3.14/LICENSE.txt "$L/Python/"
+mkdir -p "$L/capstone" "$L/pyinstaller"
+cp -r /ucrt64/share/licenses/capstone/. "$L/capstone/"; cp -r /ucrt64/share/licenses/pyinstaller/. "$L/pyinstaller/"
+# built into the game and the launcher: FSR 2, DLSS's notice, Zig's libc++/libc++abi/libunwind (its MinGW-w64: crt above)
+cp "$TP/FidelityFX-FSR2/LICENSE.txt" "$L/FidelityFX-FSR2/"
+cp "$DLSS/LICENSE.txt" "$L/DLSS/"
+cp "$ZDIR/LICENSE" "$L/Zig/"
+for d in libcxx libcxxabi libunwind; do cp "$ZDIR/lib/$d/LICENSE.TXT" "$L/Zig/$d-LICENSE.TXT"; done
+cp CREDITS.md LICENSE "$L/"
 
 echo "== zip"
 rm -f "$OUT/1NSANE_Recompiled-windows-x86_64.zip"
