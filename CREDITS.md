@@ -13,7 +13,8 @@ own copy of the game (the GOG release), translated on your own computer.
   testing; the made-up AI drivers' names.
 - Written with **Claude** (Anthropic).
 
-Released into the public domain (LICENSE).
+Its own code and files are released into the public domain (LICENSE, the Unlicense); the libraries
+and assets below keep their own licences.
 
 ## Libraries
 
