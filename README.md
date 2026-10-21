@@ -45,7 +45,11 @@ Options > Enhanced Options; the ones that can change mid-race are in the pause m
   on your computer once (about a minute), and plays it; after that it opens straight into the game.
   It needs 64-bit Linux from 2020 or later (glibc 2.31), a graphics driver with Vulkan 1.3, and
   about 1.5 GB free; the intro videos play when ffmpeg is installed. `tools/release/linux.sh` makes it.
-- **Players (Windows):** a download is on its way; for now, build it as BUILDING.md says.
+- **Players (Windows):** download the zip from
+  [Releases](https://github.com/AntAir267/1nsane-recompiled/releases), unzip it anywhere and open
+  `1nsane-recompiled.exe` in its folder; it does the same as the Linux one. It needs 64-bit
+  Windows 10 or 11, a graphics driver with Vulkan 1.3, and about 2 GB free. The program isn't
+  signed, so Windows may warn about it first (More info, then Run anyway).
 - **Developers:** see [BUILDING.md](BUILDING.md).
 
 Fan cars and maps are kept in a separate repository
@@ -60,7 +64,7 @@ Only these two computers so far:
   graphics, 32 GB RAM; Ubuntu 26.04.1 LTS, Linux 7.0, KDE Plasma 6.6 (Wayland), Mesa 26.2.3
   (RADV). Played at 2560x1440. The Linux AppImage has been tested here only.
 - **Windows:** desktop PC: AMD Ryzen 7 5800X3D, NVIDIA GeForce RTX 4070 (driver 617.14), 4K HDR
-  display; Windows 11 Pro 25H2 (build 26200). The Windows build (made from source) is tested here.
+  display; Windows 11 Pro 25H2 (build 26200). The Windows download has been tested here only.
 
 ## Layout
 
