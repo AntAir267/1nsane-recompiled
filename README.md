@@ -59,8 +59,8 @@ Only these two computers so far:
 - **Linux:** GPD Win Max 2 (2025) handheld laptop: AMD Ryzen AI 9 HX 370 with Radeon 890M
   graphics, 32 GB RAM; Ubuntu 26.04.1 LTS, Linux 7.0, KDE Plasma 6.6 (Wayland), Mesa 26.2.3
   (RADV). Played at 2560x1440. The Linux AppImage has been tested here only.
-- **Windows:** desktop PC: AMD Ryzen 7 5800X3D, NVIDIA GeForce RTX 4070, 4K HDR display. The
-  Windows build (made from source) is tested here.
+- **Windows:** desktop PC: AMD Ryzen 7 5800X3D, NVIDIA GeForce RTX 4070 (driver 617.14), 4K HDR
+  display; Windows 11 Pro 25H2 (build 26200). The Windows build (made from source) is tested here.
 
 ## Layout
 
