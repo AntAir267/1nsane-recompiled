@@ -146,8 +146,8 @@ mkdir -p "$L/FreeType" "$L/FFmpeg" "$L/FidelityFX-FSR2" "$L/DLSS" "$L/Zig" "$L/P
 cp "$FT/LICENSE.TXT" "$FT/docs/FTL.TXT" "$L/FreeType/"
 cp "$FF/COPYING.LGPLv2.1" "$L/FFmpeg/"
 { echo "bin/ffmpeg.exe is FFmpeg 9.0.2 (LGPL 2.1 or later), built unchanged from its source release"
-  echo "https://ffmpeg.org/releases/ffmpeg-9.0.2.tar.xz with: configure $(cat "$FB/configure-flags.txt")"; } \
-    > "$L/FFmpeg/SOURCE.txt"
+  echo "ffmpeg-9.0.2.tar.xz (from https://ffmpeg.org/releases/, and beside this download: SOURCES.txt) with:"
+  echo "configure $(cat "$FB/configure-flags.txt")"; } > "$L/FFmpeg/SOURCE.txt"
 # what MSYS2 built: bin/'s DLLs and programs (but our ffmpeg), lib/'s SDL3, zlib, libiconv, uuid, Vulkan's
 # loader; each package's own licence files
 for f in "$B"/bin/*; do
@@ -175,7 +175,34 @@ cp "$ZDIR/LICENSE" "$L/Zig/"
 for d in libcxx libcxxabi libunwind; do cp "$ZDIR/lib/$d/LICENSE.TXT" "$L/Zig/$d-LICENSE.TXT"; done
 cp CREDITS.md LICENSE "$L/"
 
+echo "== the LGPL parts' exact sources, to publish beside the zip"
+# FFmpeg's release, and MSYS2's source packages (recipe, patches and the original source) for the
+# libiconv and 7-Zip builds the zip carries, in third_party/downloads (third_party/README.md)
+ICONV=$(pacman -Q mingw-w64-ucrt-x86_64-libiconv | awk '{print $2}')
+SEVENZ=$(pacman -Q mingw-w64-ucrt-x86_64-7zip | awk '{print $2}')
+SRC=("ffmpeg-9.0.2.tar.xz" "mingw-w64-libiconv-$ICONV.src.tar.zst" "mingw-w64-7zip-$SEVENZ.src.tar.zst")
+rm -rf "$OUT/sources"; mkdir -p "$OUT/sources"
+for s in "${SRC[@]}"; do
+    [ -f "$TP/downloads/$s" ] || { echo "needs third_party/downloads/$s (the source of what the zip carries)"; exit 1; }
+    cp "$TP/downloads/$s" "$OUT/sources/"
+    [ -f "$TP/downloads/$s.sig" ] && cp "$TP/downloads/$s.sig" "$OUT/sources/"
+done
+cat > "$L/SOURCES.txt" <<EOF
+Three parts of this download are under the GNU LGPL, and their exact sources are published with it,
+as files beside the zip on the release page it came from:
+
+- bin/ffmpeg.exe, FFmpeg 9.0.2: ffmpeg-9.0.2.tar.xz (also https://ffmpeg.org/releases/), built as
+  FFmpeg/SOURCE.txt says.
+- GNU libiconv $ICONV (bin/libiconv-2.dll, and lib/libiconv.a, linked into the game on your
+  computer): mingw-w64-libiconv-$ICONV.src.tar.zst, MSYS2's source package (its build recipe and
+  patches with libiconv's source; also https://repo.msys2.org/mingw/sources/).
+- 7-Zip $SEVENZ (bin/7z.exe, bin/7z.dll): mingw-w64-7zip-$SEVENZ.src.tar.zst, the same way.
+
+The .sig files beside them are MSYS2's signatures.
+EOF
+
 echo "== zip"
 rm -f "$OUT/1NSANE_Recompiled-windows-x86_64.zip"
 (cd "$OUT" && 7z a -tzip -mx=7 -bso0 -bsp0 1NSANE_Recompiled-windows-x86_64.zip 1nsane-recompiled)
-ls -la "$OUT/1NSANE_Recompiled-windows-x86_64.zip"
+(cd "$OUT" && sha256sum 1NSANE_Recompiled-windows-x86_64.zip > SHA256SUMS && cd sources && sha256sum * >> ../SHA256SUMS)
+ls -la "$OUT/1NSANE_Recompiled-windows-x86_64.zip" "$OUT/sources"

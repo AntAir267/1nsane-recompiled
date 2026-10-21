@@ -85,4 +85,11 @@ For the Windows download (tools/release/windows.sh, in MSYS2's UCRT64 shell), al
 - innoextract as above: the Windows zip's innoextract.exe and license/ in innoextract/.
 - PyInstaller: MSYS2's package (mingw-w64-ucrt-x86_64-pyinstaller, 6.22.3), with its Python and
   mingw-w64-ucrt-x86_64-python-capstone.
-- downloads/: the archives above as they were fetched.
+- downloads/: the archives above as they were fetched, and the sources windows.sh puts beside the
+  zip for its LGPL parts: ffmpeg-9.0.2.tar.xz, and MSYS2's source packages for the libiconv and
+  7-Zip builds it carries, from repo.msys2.org/mingw/sources with their .sig files
+  (mingw-w64-libiconv-1.19-1.src.tar.zst, sha256
+  74428280c17094da5b702c29b2e1a0abae59556ea5dfdd65705cc8ccc1e000fb;
+  mingw-w64-7zip-26.04-1.src.tar.zst, sha256
+  75a5d9f4e714f891b1e6204bf6f5b9a5740ba2247d41cf82478a670c47523bbe; both signed by MSYS2's key
+  5F944B027F7FE2091985AA2EFA11531AA0AA7F57). A newer MSYS2 package needs its source package too.
