@@ -6,6 +6,10 @@ translated into C on your computer and built against a new stand-in for Windows 
 on SDL3 and Vulkan. The game plays as it did; everything new is an option, and with every
 option off it runs exactly as shipped.
 
+> **Alpha.** This is an early test version. It has only been tested on the author's own two
+> computers (listed under [Tested on](#tested-on)); expect problems on others, and please report
+> them in Issues.
+
 **Bring your own game.** This repository holds only the translator and the runtime, never any of
 the game's code or data. You need your own copy of the **GOG release** of 1NSANE (Game.exe and
 its data are checked against the GOG files before anything is built).
@@ -34,13 +38,29 @@ Options > Enhanced Options; the ones that can change mid-race are in the pause m
 
 ## Getting it
 
-- **Players:** a download with everything needed but the game (the translator, a compiler and the
-  runtime): it asks for your GOG copy (the installer, or the folder it installed), checks it, builds
-  the game on your computer once (about a minute), and plays it. Linux first (an AppImage, for
-  Linux from 2020 on), Windows to follow. `tools/release/linux.sh` makes it.
+- **Players (Linux):** download the AppImage from
+  [Releases](https://github.com/AntAir267/1nsane-recompiled/releases), make it executable and open
+  it. It holds everything needed but the game (the translator, a compiler and the runtime): it
+  asks for your GOG copy (the GOG installer, or the folder it installed), checks it, builds the game
+  on your computer once (about a minute), and plays it; after that it opens straight into the game.
+  It needs 64-bit Linux from 2020 or later (glibc 2.31), a graphics driver with Vulkan 1.3, and
+  about 1.5 GB free. `tools/release/linux.sh` makes it.
+- **Players (Windows):** a download is on its way; for now, build it as BUILDING.md says.
 - **Developers:** see [BUILDING.md](BUILDING.md).
 
-Fan cars and maps are kept in a separate repository; the download offers to fetch them.
+Fan cars and maps are kept in a separate repository
+([1nsane-recompiled-fan-pack](https://github.com/AntAir267/1nsane-recompiled-fan-pack)); the
+download offers to fetch them.
+
+## Tested on
+
+Only these two computers so far:
+
+- **Linux:** GPD Win Max 2 (2025) handheld laptop: AMD Ryzen AI 9 HX 370 with Radeon 890M
+  graphics, 32 GB RAM; Ubuntu 26.04.1 LTS, Linux 7.0, KDE Plasma 6.6 (Wayland), Mesa 26.2.3
+  (RADV). Played at 2560x1440. The Linux AppImage has been tested here only.
+- **Windows:** desktop PC: AMD Ryzen 7 5800X3D, NVIDIA GeForce RTX 4070, 4K HDR display. The
+  Windows build (made from source) is tested here.
 
 ## Layout
 
