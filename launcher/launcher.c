@@ -9,8 +9,9 @@
    compiles that and links it with the runtime (bin/1nsane), and offers the fan pack. After that it
    starts the game at once, until a new download (another VERSION) builds it again.
 
-   Bundle (the folder holding VERSION; by default <launcher's folder>/../lib/1nsane-recompiled, or
-   INSANE_BUNDLE): VERSION, zig/, translate, innoextract, builds/, include/, lib/, fanpack.txt.
+   Bundle (the folder holding VERSION; by default <launcher's folder>/../lib/1nsane-recompiled, on
+   Windows the launcher's own folder, or INSANE_BUNDLE): VERSION, zig/, translate, innoextract,
+   builds/, include/, lib/, fanpack.txt, and on Windows bin/ (copied beside the game it builds).
    User folder: the game's own (INSANE_USER, else XDG_DATA_HOME or ~/.local/share, or %APPDATA%, then
    /1nsane-native).
 
@@ -358,6 +359,26 @@ static int unpack_installer(const char *exe, char *out, size_t n)
     return 1;
 }
 
+#ifdef _WIN32
+/* the files of one folder into another (not its subfolders) */
+typedef struct { const char *from, *to; int ok; } CopyDir;
+
+static SDL_EnumerationResult copy_cb(void *ud, const char *dir, const char *name)
+{
+    CopyDir *c = ud;
+    char s[1024], d[1024];
+    SDL_PathInfo i;
+    (void)dir;
+    path(s, sizeof s, c->from, name);
+    path(d, sizeof d, c->to, name);
+    if (SDL_GetPathInfo(s, &i) && i.type == SDL_PATHTYPE_FILE && !SDL_CopyFile(s, d)) {
+        c->ok = 0;
+        return SDL_ENUM_FAILURE;
+    }
+    return SDL_ENUM_CONTINUE;
+}
+#endif
+
 /* Game.exe to C, then compiled (several at once) and linked with the runtime */
 static int build_game(void)
 {
@@ -435,7 +456,10 @@ static int build_game(void)
             path(src, sizeof src, gen, names[next]);
             SDL_snprintf(objs[next], sizeof objs[0], "%s/%.*s.o", obj, (int)(SDL_strlen(names[next]) - 2), names[next]);
             const char *argv[] = {zig, "cc", "-target", TARGET, "-std=gnu11", "-O2", "-w", "-DCPU_FAST_MEM",
-                                  "-fno-strict-aliasing", "-fno-omit-frame-pointer", "-fno-slp-vectorize", "-fPIE",
+                                  "-fno-strict-aliasing", "-fno-omit-frame-pointer", "-fno-slp-vectorize",
+#ifndef _WIN32
+                                  "-fPIE",
+#endif
                                   "-I", inc, "-I", gen, "-c", src, "-o", objs[next], NULL};
             SDL_PropertiesID pr = SDL_CreateProperties();
             SDL_SetPointerProperty(pr, SDL_PROP_PROCESS_CREATE_ARGS_POINTER, (void *)argv);
@@ -497,13 +521,27 @@ static int build_game(void)
     for (int i = 0; i < nnames; i++)
         largv[k++] = objs[i];
     largv[k++] = "-Wl,--whole-archive", largv[k++] = rt, largv[k++] = "-Wl,--no-whole-archive", largv[k++] = sdl;
-    largv[k++] = "-L", largv[k++] = stubs;
 #ifdef _WIN32
-    largv[k++] = "-lvulkan-1", largv[k++] = "-luser32", largv[k++] = "-lgdi32", largv[k++] = "-lwinmm",
-    largv[k++] = "-limm32", largv[k++] = "-lole32", largv[k++] = "-loleaut32", largv[k++] = "-lversion",
-    largv[k++] = "-luuid", largv[k++] = "-ladvapi32", largv[k++] = "-lsetupapi", largv[k++] = "-lshell32",
-    largv[k++] = "-ldinput8", largv[k++] = "-Wl,--stack,8388608", largv[k++] = "-mwindows";
+    /* lib/ holds the static libraries and Vulkan's import library; with NVIDIA's DLSS link library
+       there too, it goes in, with empty stand-ins for the MSVC runtime libraries its objects name
+       (the runtime's msvc_shim.c has what they use) */
+    char libdir[1024], ngx[1024], ftl[1024];
+    path(libdir, sizeof libdir, bundle, "lib");
+    path(ngx, sizeof ngx, bundle, "lib/nvsdk_ngx_d.lib");
+    path(ftl, sizeof ftl, bundle, "lib/libfreetype.a");
+    (void)stubs;
+    largv[k++] = "-L", largv[k++] = libdir;
+    if (exists(ngx))
+        largv[k++] = ngx;
+    if (exists(ftl))
+        largv[k++] = "-lfreetype";
+    largv[k++] = "-lvulkan-1", largv[k++] = "-lz", largv[k++] = "-liconv", largv[k++] = "-luser32",
+    largv[k++] = "-lgdi32", largv[k++] = "-lwinmm", largv[k++] = "-limm32", largv[k++] = "-lole32",
+    largv[k++] = "-loleaut32", largv[k++] = "-lversion", largv[k++] = "-luuid", largv[k++] = "-ladvapi32",
+    largv[k++] = "-lsetupapi", largv[k++] = "-lshell32", largv[k++] = "-ldinput8", largv[k++] = "-lpthread",
+    largv[k++] = "-static", largv[k++] = "-Wl,--stack,8388608", largv[k++] = "-mwindows";
 #else
+    largv[k++] = "-L", largv[k++] = stubs;
     largv[k++] = "-lvulkan", largv[k++] = "-lfreetype", largv[k++] = "-lz", largv[k++] = "-lm", largv[k++] = "-ldl";
     largv[k++] = "-pthread", largv[k++] = "-Wl,--allow-shlib-undefined";
 #endif
@@ -512,6 +550,17 @@ static int build_game(void)
         say("Linking failed", last_output);
         return 0;
     }
+#ifdef _WIN32
+    /* the programs and libraries the game finds beside itself (DLSS's, 7-Zip, libarchive, ...) */
+    char from[1024];
+    path(from, sizeof from, bundle, "bin");
+    CopyDir cd = {from, bin, 1};
+    SDL_EnumerateDirectory(from, copy_cb, &cd);
+    if (!cd.ok) {
+        say("Could not copy the game's helper files", SDL_GetError());
+        return 0;
+    }
+#endif
     char stamp[1024];
     path(stamp, sizeof stamp, bin, "VERSION");
     write_text(stamp, version);
@@ -1030,8 +1079,17 @@ static void find_folders(void)
     const char *b = SDL_getenv("INSANE_BUNDLE");
     if (b)
         SDL_strlcpy(bundle, b, sizeof bundle);
-    else
+    else {
+#ifdef _WIN32
+        /* (the zip unpacks to one folder: the launcher and its bundle side by side) */
+        SDL_strlcpy(bundle, SDL_GetBasePath(), sizeof bundle);
+        size_t k = SDL_strlen(bundle);
+        if (k && (bundle[k - 1] == '/' || bundle[k - 1] == '\\'))
+            bundle[k - 1] = 0;
+#else
         SDL_snprintf(bundle, sizeof bundle, "%s../lib/1nsane-recompiled", SDL_GetBasePath());
+#endif
+    }
     const char *u = SDL_getenv("INSANE_USER");
     if (u)
         SDL_strlcpy(user, u, sizeof user);

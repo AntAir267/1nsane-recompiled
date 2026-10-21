@@ -34,6 +34,13 @@ void msvc_guard_dispatch_nop(void);
 /* MinGW's runtime has these pointers (read-only, for the load configuration), not pointing at code
    that suits MSVC's calls: set at start-up */
 extern void *__guard_check_icall_fptr, *__guard_dispatch_icall_fptr;
+#ifdef __clang__
+/* what MinGW's CFG support points __guard_dispatch_icall_fptr at by default, which Zig's build of
+   MinGW's runtime leaves out (MinGW's own: a jump through rax) */
+__asm__(".text\n"
+        ".globl __guard_dispatch_icall_dummy\n"
+        "__guard_dispatch_icall_dummy: jmp *%rax\n");
+#endif
 
 __attribute__((constructor)) static void msvc_guard_setup(void)
 {
