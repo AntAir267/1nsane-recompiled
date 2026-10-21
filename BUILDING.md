@@ -41,17 +41,20 @@ and 7-Zip) and `ffmpeg` (the intro videos) to run it.
 
 ## Windows
 
-With [MSYS2](https://www.msys2.org) in its UCRT64 environment:
+With [MSYS2](https://www.msys2.org), in its UCRT64 environment:
 
-    pacman -S make mingw-w64-ucrt-x86_64-gcc mingw-w64-ucrt-x86_64-python \
-              mingw-w64-ucrt-x86_64-python-pip mingw-w64-ucrt-x86_64-sdl3 \
-              mingw-w64-ucrt-x86_64-freetype mingw-w64-ucrt-x86_64-libarchive \
+    pacman -S make mingw-w64-ucrt-x86_64-gcc mingw-w64-ucrt-x86_64-pkgconf \
+              mingw-w64-ucrt-x86_64-python mingw-w64-ucrt-x86_64-python-capstone \
+              mingw-w64-ucrt-x86_64-sdl3 mingw-w64-ucrt-x86_64-freetype mingw-w64-ucrt-x86_64-zlib \
+              mingw-w64-ucrt-x86_64-vulkan-headers mingw-w64-ucrt-x86_64-vulkan-loader \
+              mingw-w64-ucrt-x86_64-glslang mingw-w64-ucrt-x86_64-libarchive \
               mingw-w64-ucrt-x86_64-ffmpeg mingw-w64-ucrt-x86_64-7zip
-    pip install capstone
 
-plus the [Vulkan SDK](https://vulkan.lunarg.com) (its glslangValidator compiles FSR 2's shaders).
-FSR 2 and the optional DLSS SDK go in third_party/ as its README says. Then `make` builds
-`build/1nsane.exe` and copies the helper programs it uses (FFmpeg, 7-Zip, libarchive) beside it.
+Optional extras: `mingw-w64-ucrt-x86_64-lld` for DLSS, `mingw-w64-ucrt-x86_64-vulkan-validation-layers`
+for INSANE_VK_VALIDATE=1, `mingw-w64-ucrt-x86_64-innoextract` to unpack the GOG installer. No Vulkan SDK
+is needed (`make` is MSYS's own make package). FSR 2 and the optional DLSS SDK go in third_party/ as
+its README says. `make` builds `build/1nsane.exe` and copies the helper programs it uses (FFmpeg,
+7-Zip, libarchive) and their DLLs beside it, so it also runs outside MSYS2.
 
 ## Fan cars and maps
 
@@ -64,4 +67,6 @@ ever read, never run.
 For changes to the runtime: `tools/lockstep.py` runs the translated game beside the original
 code (`make build/1nsane_ref`, with Unicorn: `.venv/bin/pip install unicorn`) and compares their
 memory frame by frame;
-`make check` runs the function-level check. Both use `--test`, which turns the new options off.
+`make check` runs the function-level check. Both use `--test`, which turns the new options off. They
+have been run on Linux; on Windows Unicorn is MSYS2's `mingw-w64-ucrt-x86_64-python-unicorn` (pass
+`UNICORN=` its site-packages folder).

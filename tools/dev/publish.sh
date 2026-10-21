@@ -18,7 +18,7 @@ head=$(git rev-parse --short master)
 tmp=$(mktemp -d)
 git archive master | tar -x -C "$tmp"
 for f in "${PRIVATE[@]}"; do rm -rf "$tmp/$f"; done
-if grep -rIl -F -e "/home/$USER" -e "$(git config user.email)" "$tmp" --exclude='*.spv.h'; then
+if grep -rIl -F -e "/home/$USER" -e "$(git config user.email)" -e "/c/Users/" -e 'C:\Users\' -e "C:/Users/" "$tmp" --exclude='*.spv.h' --exclude=publish.sh; then
     echo "refused: the files above name a private path or address"; rm -rf "$tmp"; exit 1
 fi
 find "$pub" -mindepth 1 -maxdepth 1 ! -name .git -exec rm -rf {} +
