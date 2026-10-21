@@ -62,6 +62,12 @@ Used alongside it:
 - **innoextract** (unpacking the GOG installer without running it) — zlib licence. Copyright ©
   Daniel Scharrer.
 
+In the download, besides the program's own parts:
+
+- **Zig** (the C compiler that builds the game on your computer) — MIT licence. <https://ziglang.org>
+- **Python** and **PyInstaller** (the translator, packed as one program) — the PSF licence; the
+  PyInstaller bootloader, GPL with its exception for packed programs.
+
 ## Assets
 
 - **Input Prompts** by **Kenney** (<https://kenney.nl>) — CC0: the controller button icons.

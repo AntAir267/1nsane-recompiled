@@ -34,8 +34,10 @@ Options > Enhanced Options; the ones that can change mid-race are in the pause m
 
 ## Getting it
 
-- **Players:** a download with everything needed (the translator, a compiler and the runtime, no
-  game) is on its way: it asks for your GOG copy, builds the game once, and plays it.
+- **Players:** a download with everything needed but the game (the translator, a compiler and the
+  runtime): it asks for your GOG copy (the installer, or the folder it installed), checks it, builds
+  the game on your computer once (about a minute), and plays it. Linux first (an AppImage, for
+  Linux from 2020 on), Windows to follow. `tools/release/linux.sh` makes it.
 - **Developers:** see [BUILDING.md](BUILDING.md).
 
 Fan cars and maps are kept in a separate repository; the download offers to fetch them.
