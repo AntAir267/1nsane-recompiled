@@ -316,15 +316,37 @@ static int check_and_copy(const char *src)
     return 1;
 }
 
+static SDL_EnumerationResult remove_entry(void *ud, const char *dir, const char *name);
+
+static void remove_tree(const char *p)
+{
+    SDL_EnumerateDirectory(p, remove_entry, NULL);
+    SDL_RemovePath(p);
+}
+
+static SDL_EnumerationResult remove_entry(void *ud, const char *dir, const char *name)
+{
+    (void)ud;
+    char p[1024];
+    SDL_PathInfo i;
+    SDL_snprintf(p, sizeof p, "%s%s", dir, name);   /* (dir ends in a separator) */
+    if (SDL_GetPathInfo(p, &i) && i.type == SDL_PATHTYPE_DIRECTORY)
+        remove_tree(p);
+    else
+        SDL_RemovePath(p);
+    return SDL_ENUM_CONTINUE;
+}
+
 static int unpack_installer(const char *exe, char *out, size_t n)
 {
     char tool[1024], tmp[1024];
     path(tool, sizeof tool, bundle, "innoextract" EXE);
     path(tmp, sizeof tmp, user, "build/unpack");
-    make_dirs(tmp);
     say("Unpacking the GOG installer", "nothing in it is run, only read");
     set_progress(-1);
-    const char *argv[] = {tool, "-s", "-d", tmp, exe, NULL};
+    remove_tree(tmp);                   /* (what a stopped run left) */
+    make_dirs(tmp);
+    const char *argv[] = {tool, "-s", "-I", "app", "-d", tmp, exe, NULL};   /* (the game is in app/) */
     if (run(argv) != 0) {
         say("Could not unpack the installer", last_output);
         return 0;
@@ -638,12 +660,7 @@ static int setup_task(void *unused)
             ok = unpack_installer(source, dir, sizeof dir) && check_and_copy(dir);
             char tmp[1024];
             path(tmp, sizeof tmp, user, "build/unpack");
-            const char *rm[] = {"rm", "-rf", tmp, NULL};
-#ifndef _WIN32
-            run(rm);
-#else
-            (void)rm;
-#endif
+            remove_tree(tmp);
         } else if (find_game(source, dir, sizeof dir) || exists(source)) {
             if (!find_game(source, dir, sizeof dir))
                 SDL_strlcpy(dir, source, sizeof dir);

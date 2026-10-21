@@ -36,3 +36,28 @@ Third-party sources fetched and built locally (not committed):
       LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
       OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
       THE SOFTWARE.
+
+For the player download (tools/release/linux.sh), also:
+
+- Zig 0.17.0 (MIT licence): the official Linux x86_64 build from ziglang.org, unpacked as
+  zig-x86_64-linux-0.17.0/. It builds the download, and the download carries it (without doc/) to
+  compile the player's translation.
+- SDL3 again, built with that Zig for glibc 2.31 into sdl3-rel/: rel-tools/ holds zcc, zcxx, zar
+  and zranlib (`zig cc -target x86_64-linux-gnu.2.31`, and so on); configure SDL3-<version> in
+  SDL3-build-rel/ with CMAKE_C_COMPILER, CMAKE_AR and CMAKE_RANLIB set to them,
+  CMAKE_C_FLAGS="-idirafter /usr/include -idirafter /usr/include/x86_64-linux-gnu",
+  CMAKE_LIBRARY_PATH=/usr/lib/x86_64-linux-gnu, SDL_SHARED=OFF, SDL_STATIC=ON,
+  SDL_X11_XSCRNSAVER=OFF, CMAKE_BUILD_TYPE=Release, CMAKE_INSTALL_PREFIX=sdl3-rel; then build
+  and install.
+- pack-venv/: a Python virtual environment with PyInstaller (6.22) and Capstone (5.0.9), which
+  freezes the translator into one program.
+- appimagetool-x86_64.AppImage, from github.com/AppImage/appimagetool (continuous release), and
+  appimage-runtime-x86_64, the runtime it puts at the front of an AppImage (it fetches one from
+  github.com/AppImage/type2-runtime each time otherwise; this one was taken from the front of
+  the first AppImage it made, up to its --appimage-offset).
+- innoextract 1.9 (zlib licence, Daniel Scharrer): the author's ready-made builds from
+  github.com/dscharrer/innoextract (release 1.9: innoextract-1.9-linux.tar.xz and
+  innoextract-1.9-windows.zip, signed with key 28555A66D7E1DEC9), in innoextract/: bin/amd64's
+  program copied up as innoextract, the Windows one as innoextract.exe, and its license/ folder
+  (the libraries built into it: Boost, liblzma, bzip2, zlib, libstdc++). It unpacks the GOG
+  installer for the player without running it.

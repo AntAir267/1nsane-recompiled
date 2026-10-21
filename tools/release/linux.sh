@@ -78,7 +78,9 @@ rm -rf "$B/zig/doc"
       sha=$(curl -fsSL "https://github.com/AntAir267/1nsane-recompiled-fan-pack/releases/download/v1/SHA256SUMS" | grep " $f\$" | cut -c1-64)
       echo "$sha $line $f"
   done; } > "$B/fanpack.txt"
-if [ -x "$INNO" ]; then cp "$INNO" "$B/innoextract"; else echo "(no innoextract: the GOG installer can't be unpacked, only a folder)"; fi
+[ -x "$INNO" ] || { echo "needs third_party/innoextract (third_party/README.md): it unpacks the GOG installer"; exit 1; }
+cp "$INNO" "$B/innoextract"
+cp -r "$(dirname "$INNO")/license" "$B/innoextract-license"
 
 echo "== AppImage"
 A=$OUT/AppDir
@@ -98,5 +100,7 @@ Icon=1nsane-recompiled
 Categories=Game;SportsGame;
 EOF
 cp assets/icon/1nsane-recompiled.png "$A/1nsane-recompiled.png"
-ARCH=x86_64 "$ROOT/third_party/appimagetool-x86_64.AppImage" --no-appstream "$A" "$OUT/1NSANE_Recompiled-x86_64.AppImage" >/dev/null
+RUNTIME=()                  # (appimagetool fetches its runtime each time unless it is given one)
+[ -f "$ROOT/third_party/appimage-runtime-x86_64" ] && RUNTIME=(--runtime-file "$ROOT/third_party/appimage-runtime-x86_64")
+ARCH=x86_64 "$ROOT/third_party/appimagetool-x86_64.AppImage" --no-appstream "${RUNTIME[@]}" "$A" "$OUT/1NSANE_Recompiled-x86_64.AppImage" >/dev/null
 ls -la "$OUT/1NSANE_Recompiled-x86_64.AppImage"
