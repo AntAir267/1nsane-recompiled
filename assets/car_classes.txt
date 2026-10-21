@@ -1,0 +1,461 @@
+# 1NSANE native: car classes and measured numbers (DESIGN.md point 8). Made by
+# tools/car_classes.py from the class proposal Ant approved on 2026-10-18. A car not listed
+# keeps its own .vht letter. A car_classes.txt in the user folder (the same lines) adds or
+# overrides entries; its car lines may leave out the numbers.
+#
+# class <letter> <unlock> <NAME>: the classes in their order (the first five are the
+# championships' and keep their letters); unlock "game" = as the game does it, "always" =
+# always unlocked. The bonus cars (won in the championships) stay locked until won, whatever
+# their class.
+
+class x game   4X4
+class c game   SPORTS
+class p game   PICKUPS
+class t game   TRUCKS
+class w game   EXTREME
+class u always 4X4 OPEN
+class e always FAST TRUCKS
+class r always ROCK CRAWLERS
+class d always DESERT RACERS
+class a always RALLY
+class s always SPORTS CARS
+class m always MUSCLE & CLASSICS
+class k always MONSTER TRUCKS
+class v always VANS & BUSES
+class q always QUADS & BIKES
+class g always DRAG & RACE
+class o game   ODDITIES
+class z always UNLIMITED
+
+# car <file> <letter> <top km/h> <0-100 s> <0-50 s> <power>   # the real vehicle; why
+
+car 126poff   u  211  3.3  1.4  4.50   # Fiat 126p, off-road conversion; compact -> SPORTS; quicker than the stock SPORTS cars (top 211 km/h vs at most 152, 0-50 1.4s vs the quickest stock 1.9s): 4X4 OPEN
+car 1njctr    d  202  3.5  1.5  4.50   # 1njectoR XS (custom off-road racer); desert -> DESERT RACERS
+car 250p      d  195  3.1  1.2  5.00   # Ford F-250 prerunner; desert -> DESERT RACERS
+car 2cvdg     a   73    -  4.5  1.20   # Citroen 2CV; rally -> RALLY
+car 40coupe   m  199  3.1  1.2  4.20   # 1940 Ford Coupe; muscle -> MUSCLE & CLASSICS
+car 40ford8   m  258  3.4  1.3  4.20   # 1940 Ford; muscle -> MUSCLE & CLASSICS
+car 428cj     m  192  3.9  2.0  2.80   # 1968 Ford Mustang GT 428 Cobra Jet; muscle -> MUSCLE & CLASSICS
+car 4wdquad   q   73    -  1.5  3.50   # Yamaha Kodiak 450; atv -> QUADS & BIKES
+car 4wdquad1  q   72    -  1.6  3.00   # 4x4 quad (KC); atv -> QUADS & BIKES
+car 4x4ford   u  266  2.4  1.2  5.20   # Ford Ranchero, 4x4 conversion; pickup -> PICKUPS; quicker than the stock PICKUPS cars (top 266 km/h vs at most 174, 0-50 1.2s vs the quickest stock 1.4s): 4X4 OPEN
+car 4x4nova   m  185  2.9  1.2  6.00   # Chevrolet Nova, 4x4 conversion; muscle -> MUSCLE & CLASSICS
+car 66bus     v  132  9.4  2.6  2.75   # 1966 VW bus?; van -> VANS & BUSES
+car 66chevy   r  145  3.5  1.4  2.56   # 1966 Chevy crawler; crawler -> ROCK CRAWLERS
+car 69sscam   m  252  3.1  1.5  3.00   # 1969 Chevrolet Camaro SS; muscle -> MUSCLE & CLASSICS
+car 70rr      m  231  3.8  1.5  5.50   # 1970 Plymouth Road Runner; muscle -> MUSCLE & CLASSICS
+car 72b       r  112  4.4  2.1  5.00   # 1972 Chevrolet Blazer crawler; crawler -> ROCK CRAWLERS
+car 72blaz    x  170  3.2  1.4  2.00   # 1972 Chevrolet K5 Blazer; suv -> 4X4
+car 72blz     x  144  3.9  1.5  2.00   # 1972 Chevrolet K5 Blazer; suv -> 4X4
+car 74bronco  x  170  4.0  1.4  2.90   # 1974 Ford Bronco; suv -> 4X4
+car 78burban  u  204  4.9  1.8  3.00   # 1978 Chevrolet Suburban; suv -> 4X4; quicker than the stock 4X4 cars (top 204 km/h vs at most 153, 0-50 1.8s vs the quickest stock 1.7s): 4X4 OPEN
+car 810       a  186  4.6  1.6  3.05   # Datsun 810; rally -> RALLY
+car 83rang    p  156  5.5  1.9  1.50   # 1983 Ford Ranger 4x4; pickup -> PICKUPS
+car 850csi    s  241  2.4  1.2  7.30   # BMW 850CSi; sports -> SPORTS CARS
+car 8wf       k   71    -  1.5  3.15   # 8 Wheeled Freak (8-wheel monster); monster -> MONSTER TRUCKS
+car 911       s  250  2.2  1.1  8.00   # Porsche 911 Turbo (AWD); sports -> SPORTS CARS
+car 93yj      c  167  3.9  1.6  2.50   # 1993 Jeep Wrangler YJ; compact -> SPORTS
+car 95yj      c  154 10.4  3.4  1.25   # 1995 Jeep Wrangler YJ; compact -> SPORTS
+car 98gts     s  298  2.5  1.1  4.00   # 1998 Dodge Viper GTS-R; sports -> SPORTS CARS
+car 99must    m  248  2.7  1.2  3.20   # 1999 Ford Mustang GT; muscle -> MUSCLE & CLASSICS
+car acobra    s  189  2.6  1.2  2.00   # AC Cobra, 4x4 conversion; sports -> SPORTS CARS
+car alfagta   a  193  3.9  1.7  3.80   # Alfa Romeo GTA 1300 Junior; rally -> RALLY
+car all       d  136  4.6  1.7  3.60   # Alligator off-road racer (custom); desert -> DESERT RACERS
+car amphi     o  131  5.2  2.0  3.85   # Centaur (8-wheel amphibious ATV, Argo-like); odd -> ODDITIES
+car anakin    z  789  0.7  0.5  2.00   # Anakin's podracer (Star Wars); odd -> ODDITIES; over 400 km/h: UNLIMITED
+car andy      t  137  8.3  2.8  2.75   # 6x6 Goliath (stock; a 6x6 heavy truck); stock car: keeps its class
+car anill     d  177  3.3  1.5  2.70   # Anihilator (custom off-roader); desert -> DESERT RACERS
+car armytran  e  183  2.7  1.3  4.00   # Army transporter 6x6; truck -> TRUCKS; quicker than the stock TRUCKS cars (top 183 km/h vs at most 137, 0-50 1.3s vs the quickest stock 2.7s): FAST TRUCKS
+car ateam     z  261  2.6  1.2  3.20   # GMC Vandura (A-Team van); van -> VANS & BUSES; far quicker than the rest of VANS & BUSES (top 261 km/h vs median 146, 0-50 1.2s vs 2.3s): UNLIMITED
+car atv       q  129  3.0  1.1  3.80   # ATV (stock bonus car; quad); atv -> QUADS & BIKES; a bonus car: classed like the fan cars, still won in its championship
+car audis1    a  217  2.9  1.2  3.00   # Audi Sport Quattro S1 (Group B); rally -> RALLY
+car badass    r  150  3.5  1.5  4.50   # Jeep "Badass" (stock-ish build); crawler -> ROCK CRAWLERS
+car badass2   r  142  4.9  1.8  3.00   # Jeep crawler; crawler -> ROCK CRAWLERS
+car baja      x  146  5.0  1.7  2.60   # Baja Bug (stock; VW Baja Bug); stock car: keeps its class
+car bajabug   d  181  3.6  1.3  3.30   # SandScorcher (Baja Bug); desert -> DESERT RACERS
+car bath      o  203  2.8  1.2  1.50   # Bathtub 4x4; odd -> ODDITIES
+car bbq       q  110  3.7  1.7  3.30   # Big Bear quad (Yamaha Big Bear); atv -> QUADS & BIKES
+car beetil    a   41    -    -  1.50   # VW Beetle; rally -> RALLY
+car belair    m  206  3.7  1.6  2.60   # 1962 Chevrolet Bel Air; muscle -> MUSCLE & CLASSICS
+car bf#14rf   k  125  3.5  1.6  2.00   # Bigfoot #14 monster truck; monster -> MONSTER TRUCKS
+car bf14chro  k  133  3.4  1.5  2.80   # Bigfoot #14 monster truck (ChromaLusion); monster -> MONSTER TRUCKS
+car bike      q  212  3.1  1.3  2.80   # Chopper motorcycle; atv -> QUADS & BIKES
+car blade     g  276  3.6  1.3  7.10   # Blade (twin-engine single-seat on-road racer, original design); race -> DRAG & RACE
+car blazer    x  141  6.0  2.3  2.55   # Chevrolet S-10 Blazer; suv -> 4X4
+car blista    a  207  2.4  1.2  8.00   # Blista Compact (GTA hatchback); rally -> RALLY
+car bmw5      s  134  3.8  1.3  2.50   # BMW M5; sports -> SPORTS CARS
+car box1      s  225  4.6  1.9  2.55   # Porsche Boxster; sports -> SPORTS CARS
+car bp        o  229  3.0  1.3  2.80   # Barley Pickers tractor; work -> ODDITIES
+car brang     d  182  3.3  1.3  1.90   # Ford Ranger Baja prerunner; desert -> DESERT RACERS
+car bron2     x  145  3.8  1.7  2.70   # 1985 Ford Bronco II; suv -> 4X4
+car bronco    x  148  5.9  1.6  3.20   # Raider (stock bonus car; Ford Bronco-like); suv -> 4X4; within the stock 4X4 cars' window (top 148 km/h, at most 176; 0-50 1.6s, no quicker than 1.19s); a bonus car: classed like the fan cars, still won in its championship
+car brsr      r  146  3.3  1.2  2.60   # Poison Spyder crawler (Jeep); crawler -> ROCK CRAWLERS
+car btr       d  156  3.7  1.3  2.55   # Bump truck racer; desert -> DESERT RACERS
+car bus       v  120 10.9  3.2  2.75   # Bus (6-wheel); van -> VANS & BUSES
+car bwcat     d  185  3.0  1.2  3.20   # Bowler Wildcat (rally raid); desert -> DESERT RACERS
+car c290      c  139  5.4  2.0  1.90   # Land Rover Defender 90 (Cairo 2); compact -> SPORTS
+car cal       s  281  2.1  1.0  8.50   # Callaway Sledgehammer Corvette; sports -> SPORTS CARS
+car camaro    m  212  3.8  1.7  1.80   # 1967 Chevrolet Camaro; muscle -> MUSCLE & CLASSICS
+car campa     c  113  7.9  3.0  1.50   # Fiat Nuova Campagnola; compact -> SPORTS
+car capri     m  154  5.9  2.0  2.40   # Ford Capri banger; muscle -> MUSCLE & CLASSICS
+car celica    s  206  3.0  1.2  1.40   # Toyota Celica GT; sports -> SPORTS CARS
+car charger   m  195  2.9  1.2  3.50   # Dodge Charger R/T (2005), 4x4; muscle -> MUSCLE & CLASSICS
+car chev      m  184  2.9  1.1  2.00   # Chevrolet Chevelle; muscle -> MUSCLE & CLASSICS
+car chevy     k  159  2.4  1.1  7.00   # The Car Killer (Chevy on monster tyres); monster -> MONSTER TRUCKS
+car chevyvan  v  170  4.0  1.7  3.50   # Chevrolet van; van -> VANS & BUSES
+car cjalf     r  150  3.4  1.4  3.20   # Jeep CJ crawler; crawler -> ROCK CRAWLERS
+car cliff     w   94    -  1.4  3.20   # Cliffhanger (stock; hillclimb buggy); stock car: keeps its class
+car comp      d  169  3.5  1.4  2.55   # Comp racer (custom buggy); desert -> DESERT RACERS
+car copter    o   83    -  1.7  5.00   # Helicopter; odd -> ODDITIES
+car corsa     a  162  3.7  1.5  3.20   # Opel Corsa; rally -> RALLY
+car cosworth  a  170  3.4  1.5  4.00   # Ford Sierra/Escort Cosworth; rally -> RALLY
+car cougar    m  189  3.7  1.5  5.30   # Mercury Cougar; muscle -> MUSCLE & CLASSICS
+car coyt2     w  112  7.6  2.9  1.55   # Coyote 2 (stock Coyote derivative); hillclimb -> EXTREME
+car cris88    c  120  6.8  2.8  1.35   # Land Rover Series III 88" comp; compact -> SPORTS
+car cruiser   r  163  5.0  2.6  3.90   # IRC Cruiser (Land Cruiser climber, toxicfritz); crawler -> ROCK CRAWLERS
+car crusher   k  196  2.7  1.2  3.65   # Carolina Crusher monster truck; monster -> MONSTER TRUCKS
+car crwlhrn   r  150  4.0  1.5  3.20   # Jeep Hurricane crawler; crawler -> ROCK CRAWLERS
+car crx       z  349  2.3  1.1  4.00   # Honda CRX 1989; rally -> RALLY; far quicker than the rest of RALLY (top 349 km/h vs median 182, 0-50 1.1s vs 1.5s): UNLIMITED
+car cuda      m  236  3.2  1.3  3.80   # 1968 Plymouth Barracuda; muscle -> MUSCLE & CLASSICS
+car cvtr      p  149 10.4  3.6  2.10   # 1979 Chevrolet K20; pickup -> PICKUPS
+car d90       c  171  4.9  2.5  3.50   # Land Rover Defender 90 trail rig; compact -> SPORTS
+car d90bart   z  251  3.6  1.4  1.95   # Land Rover Defender 90 Xtreme rig; crawler -> ROCK CRAWLERS; far quicker than the rest of ROCK CRAWLERS (top 251 km/h vs median 148, 0-50 1.4s vs 1.4s): UNLIMITED
+car d90c      r  171  4.1  1.7  3.50   # Land Rover Defender 90 crawler; crawler -> ROCK CRAWLERS
+car d90dgcwl  z  251  3.7  1.4  1.95   # Land Rover Defender 90 crawler; crawler -> ROCK CRAWLERS; far quicker than the rest of ROCK CRAWLERS (top 251 km/h vs median 148, 0-50 1.4s vs 1.4s): UNLIMITED
+car dafdak    e  189  3.9  1.3  4.50   # DAF Dakar rally truck; truck -> TRUCKS; quicker than the stock TRUCKS cars (top 189 km/h vs at most 137, 0-50 1.3s vs the quickest stock 2.7s): FAST TRUCKS
+car dak_evo   d  170  4.1  1.5  2.55   # Mitsubishi Pajero Evo (Dakar); desert -> DESERT RACERS
+car dakar     e  163  4.1  1.5  4.90   # Kamaz Dakar rally truck; truck -> TRUCKS; quicker than the stock TRUCKS cars (top 163 km/h vs at most 137, 0-50 1.5s vs the quickest stock 2.7s): FAST TRUCKS
+car dc        r  181  7.6  2.9  2.80   # Dodge Dakota crawler; crawler -> ROCK CRAWLERS
+car def9      c  134 12.3  4.5  1.25   # Land Rover Defender 90; compact -> SPORTS
+car def9s     c  134 12.2  4.4  1.25   # Land Rover Defender 90; compact -> SPORTS
+car derby     m  159  5.8  2.2  2.30   # Wrecker (stock bonus car; demolition derby saloon); muscle -> MUSCLE & CLASSICS; a bonus car: classed like the fan cars, still won in its championship
+car desrac    d  225  2.6  1.1  5.00   # Desert racer (buggy); desert -> DESERT RACERS
+car dgdrcr    d  202  3.7  1.2  4.20   # Desert Racer II; desert -> DESERT RACERS
+car dia       k  222  4.8  1.8  3.00   # Mudzilla (mud bogger); monster -> MONSTER TRUCKS
+car diablo2   s  187  4.4  1.8  2.65   # Diablos SS (Lamborghini Diablo?); sports -> SPORTS CARS
+car digar     o   81    -  3.5  0.80   # JCB digger; work -> ODDITIES
+car dinkles   u  220  3.3  1.2  3.60   # Chevrolet Silverado 4x4 "Masher"; pickup -> PICKUPS; quicker than the stock PICKUPS cars (top 220 km/h vs at most 174, 0-50 1.2s vs the quickest stock 1.4s): 4X4 OPEN
+car dkbugy2   d  189  3.0  1.2  2.80   # SMG buggy (rally raid); desert -> DESERT RACERS
+car dkmont    d  175  4.3  1.5  2.95   # Nissan Patrol rally raid; desert -> DESERT RACERS
+car dktrphy   d  201  3.6  1.3  3.00   # Dodge Dakota trophy truck; desert -> DESERT RACERS
+car dmd       x  151  6.8  3.3  1.30   # Military HMMWV (desert); suv -> 4X4
+car drag      g  259  3.1  1.5  7.25   # Fido's drag car (NOS); race -> DRAG & RACE
+car drag350   g  147  1.9  1.1 50.50   # F-350 drag truck (absurd power); race -> DRAG & RACE
+car dragm     g  230  2.5  1.1  8.00   # Drag Mini; race -> DRAG & RACE
+car dragster  g  194  3.8  1.9  6.00   # Top Fuel dragster; race -> DRAG & RACE
+car drascal   v  146  3.5  1.6  2.65   # Bedford Rascal drift van; van -> VANS & BUSES
+car drift     s  215  2.4  1.1  5.00   # Nissan Silvia drift car (KC); sports -> SPORTS CARS
+car drift3    s  288  2.2  1.1  8.20   # Nissan Silvia drift car; sports -> SPORTS CARS
+car drngdk    u  226  2.9  1.3  5.50   # Dodge Durango; suv -> 4X4; quicker than the stock 4X4 cars (top 226 km/h vs at most 153, 0-50 1.3s vs the quickest stock 1.7s): 4X4 OPEN
+car duck      o  281  2.7  1.5  3.90   # Shutta's duck; odd -> ODDITIES
+car dune      d  192  3.4  1.5  5.70   # Dune buggy; desert -> DESERT RACERS
+car durango   u  236  3.6  1.4  1.70   # Dodge Durango; suv -> 4X4; quicker than the stock 4X4 cars (top 236 km/h vs at most 153, 0-50 1.4s vs the quickest stock 1.7s): 4X4 OPEN
+car duster    m  262  2.8  1.1  3.20   # Plymouth Duster; muscle -> MUSCLE & CLASSICS
+car eagle     u  192  2.5  1.1  3.00   # AMC Eagle; suv -> 4X4; quicker than the stock 4X4 cars (top 192 km/h vs at most 153, 0-50 1.1s vs the quickest stock 1.7s): 4X4 OPEN
+car eagle3    s  221  3.0  1.2  2.60   # Eagle (from Carmageddon); sports -> SPORTS CARS
+car eff100    p  197  3.7  1.7  3.45   # Ford F-100; pickup -> PICKUPS
+car eldo      m  162  3.5  1.8  1.80   # 1976 Cadillac Eldorado; muscle -> MUSCLE & CLASSICS
+car ele       m  230  3.9  1.6  2.10   # Shelby GT500 "Eleanor"; muscle -> MUSCLE & CLASSICS
+car elni      s  303  2.9  1.2  3.60   # La Nina (concept supercar from Need for Speed 4); sports -> SPORTS CARS
+car em109     c   91    -  4.4  1.15   # Land Rover Series III 109 military; compact -> SPORTS
+car enzo      s  260  3.7  2.0  3.45   # Ferrari Enzo; sports -> SPORTS CARS
+car eradic    k  202  2.4  1.2  4.50   # Eradicator (monster); monster -> MONSTER TRUCKS
+car escort    a  217  3.7  1.4  2.50   # Ford Escort XR3i; rally -> RALLY
+car escortrs  a  162  4.6  1.6  3.10   # Ford Escort RS2000; rally -> RALLY
+car ev7       a  213  4.3  1.6  2.35   # Mitsubishi Lancer Evo 7; rally -> RALLY
+car evo7      a  174  3.2  1.3  2.50   # Mitsubishi Lancer Evo 7; rally -> RALLY
+car exjim     c  145  5.4  2.0  2.65   # Suzuki Jimny expedition; compact -> SPORTS
+car exped     u  223  3.9  1.4  1.70   # Ford Expedition; suv -> 4X4; quicker than the stock 4X4 cars (top 223 km/h vs at most 153, 0-50 1.4s vs the quickest stock 1.7s): 4X4 OPEN
+car f150cs    p  199  4.1  1.8  6.50   # Ford F-150 custom sport; pickup -> PICKUPS
+car f150e     p  175  4.3  1.6  1.20   # Ford F-150 SuperCab; pickup -> PICKUPS
+car f150p     d  175  3.1  1.4  1.80   # Ford F-150 prerunner; desert -> DESERT RACERS
+car f350fb    p  169  4.8  1.5  2.95   # Ford F-350 flatbed; pickup -> PICKUPS
+car f350fbor  p  153  3.2  1.5  1.50   # Ford F-350 flatbed off-road; pickup -> PICKUPS
+car f350limo  o  170  7.0  2.7  2.50   # Ford F-350 limousine; odd -> ODDITIES
+car f430      s  227  1.8  1.0  4.20   # Ferrari F430; sports -> SPORTS CARS
+car f6c       p   87    -  1.5  3.10   # Ford F-250 6x6; pickup -> PICKUPS; slower than every stock PICKUPS car (87 km/h)
+car falconxk  m  164  2.9  1.1  4.20   # Ford Falcon XK; muscle -> MUSCLE & CLASSICS
+car falken    s  314  2.2  1.1  9.00   # Nissan Silvia (Falken); sports -> SPORTS CARS
+car faros     v  136  6.1  1.9  2.85   # Ikarus 55 coach; van -> VANS & BUSES
+car fastbmon  k  175  3.8  1.4  3.20   # Monster fastback (Mustang); monster -> MONSTER TRUCKS
+car ff1       z  527  1.7  1.0  3.00   # Ferrari F1; race -> DRAG & RACE; over 400 km/h: UNLIMITED
+car finstral  t  155  4.9  1.9  2.50   # Mercedes Unimog (Finstral); truck -> TRUCKS
+car firebug   d  138  3.1  1.3  4.40   # Firebug (buggy); desert -> DESERT RACERS
+car fj40      c  160  3.5  1.7  3.70   # Toyota FJ40 Land Cruiser (modified); compact -> SPORTS
+car fj40alf   r  150  3.4  1.4  3.20   # Toyota FJ40 crawler; crawler -> ROCK CRAWLERS
+car fj60      x  127 10.0  3.4  1.30   # Toyota Land Cruiser FJ60; suv -> 4X4
+car fjcrsr    x  148  6.2  2.0  1.80   # Toyota FJ Cruiser; suv -> 4X4
+car flashd    m  139  2.7  1.3  2.10   # Flashden (derby car); muscle -> MUSCLE & CLASSICS
+car fnfsky    s  241  2.9  1.4  3.40   # Nissan Skyline (Fast & Furious); sports -> SPORTS CARS
+car focus     a  176  4.3  1.5  4.60   # Ford Focus WRC (2000); rally -> RALLY
+car fokai     p  156  3.9  1.5  3.70   # 1984 Toyota Hilux; pickup -> PICKUPS
+car fordmu    m  183  4.0  1.7  3.20   # Ford Mustang; muscle -> MUSCLE & CLASSICS
+car fourby    p  176  3.2  1.3  4.75   # Ford F-150 4x4; pickup -> PICKUPS
+car fourtrax  q  195  2.5  1.1  3.00   # Honda Fourtrax 250R; atv -> QUADS & BIKES
+car freight   t  119 12.9  3.3  1.10   # Freightliner semi; truck -> TRUCKS
+car freight2  t  149  5.7  2.2  1.80   # Mad Max truck; truck -> TRUCKS
+car frfwd     m  181  3.3  1.4  2.90   # 1932 Ford roadster, 4WD; muscle -> MUSCLE & CLASSICS
+car front     r  153  4.8  1.5  3.70   # Nissan Frontier crawler; crawler -> ROCK CRAWLERS
+car frontier  p  189  3.7  1.4  1.40   # Nissan Frontier; pickup -> PICKUPS
+car fwdcoe    t   58    -  2.0 10.00   # FWD SU-COE truck; truck -> TRUCKS; slower than every stock TRUCKS car (58 km/h)
+car g4def     c  127 10.4  3.6  1.60   # Land Rover Defender 90 (G4 Challenge); compact -> SPORTS
+car g500      x  132  8.6  2.7  1.55   # Mercedes G500; suv -> 4X4
+car gactiv    r  182  4.3  1.6  1.80   # Activ G (Belgian extreme off-road comp vehicle); crawler -> ROCK CRAWLERS
+car genlee    m  215  2.9  1.1  4.20   # Dodge Charger "General Lee"; muscle -> MUSCLE & CLASSICS
+car gicheeto  d  175  3.6  1.4  4.10   # GI Joe ORV; desert -> DESERT RACERS
+car gllrd     s  257  2.0  1.0  2.95   # Lamborghini Gallardo; sports -> SPORTS CARS
+car gmc       d  171  3.4  1.5  7.00   # GMC trophy truck; desert -> DESERT RACERS
+car gmpick    d  182  2.8  1.1  3.30   # Predator (hillclimb build); hillclimb -> EXTREME; quicker than the stock EXTREME cars (top 182 km/h vs at most 125, 0-50 1.1s vs the quickest stock 1.4s): DESERT RACERS
+car gnu       o  143  5.6  1.7  2.40   # Gnu (stock; 4WD kart); stock car: keeps its class
+car golf2     a  195  3.5  1.4  3.20   # VW Golf Mk1; rally -> RALLY
+car gradig    k  220  2.0  1.1  6.50   # Grave Digger monster truck; monster -> MONSTER TRUCKS
+car grind     d  165  3.7  1.3  3.20   # Rocky X (original off-roader, Icelander); desert -> DESERT RACERS
+car grizzly   q  121  5.3  1.7  2.50   # Yamaha Grizzly 660; atv -> QUADS & BIKES
+car gsx       m  186  3.0  1.2  2.00   # Buick GSX, 4x4; muscle -> MUSCLE & CLASSICS
+car gto       m  146  2.0  1.1 20.20   # Pontiac GTO (KC); muscle -> MUSCLE & CLASSICS
+car gupatrol  u  196  2.6  1.1  4.00   # Nissan GU Patrol; suv -> 4X4; quicker than the stock 4X4 cars (top 196 km/h vs at most 153, 0-50 1.1s vs the quickest stock 1.7s): 4X4 OPEN
+car h2crwlr   r  159  2.9  1.1  5.20   # Hummer H2 crawler; crawler -> ROCK CRAWLERS
+car hlxcrl    r  147  3.6  1.3  4.40   # Toyota Hilux crawler; crawler -> ROCK CRAWLERS
+car hoggar    d  180  2.8  1.1  3.30   # Hoggar (hillclimb build); hillclimb -> EXTREME; quicker than the stock EXTREME cars (top 180 km/h vs at most 125, 0-50 1.1s vs the quickest stock 1.4s): DESERT RACERS
+car holden    k  168  2.5  1.4 18.20   # Holden Bigfoot; monster -> MONSTER TRUCKS
+car honda     a  249  2.5  1.1  3.20   # Honda Civic; rally -> RALLY
+car hpi       o  200  3.4  1.2  3.20   # HPI Baja 5B (R/C buggy, scaled up); odd -> ODDITIES
+car htsam     c  124 11.8  4.4  1.27   # Suzuki Samurai hardtop; compact -> SPORTS
+car hunau     s  204  2.5  1.1  3.60   # Bentley Hunaudieres concept; sports -> SPORTS CARS
+car hurrcn    d  182  2.9  1.2  3.30   # Jeep Hurricane racer; hillclimb -> EXTREME; quicker than the stock EXTREME cars (top 182 km/h vs at most 125, 0-50 1.2s vs the quickest stock 1.4s): DESERT RACERS
+car hvrcft    o  207  2.3  1.2  6.00   # Prowler hovercraft; odd -> ODDITIES
+car ibex      r  150  3.6  1.5  3.20   # Ibex rock crawler; crawler -> ROCK CRAWLERS
+car ih475     o   32    -    -  0.50   # International Harvester 475 tractor; work -> ODDITIES
+car ihca11    p  169  3.7  1.3  3.60   # Val's IHC A1100 pickup; pickup -> PICKUPS
+car ihs       x  142  4.9  1.7  2.55   # International Scout II; suv -> 4X4
+car iib       c  169  4.1  1.5  2.55   # Land Rover Series IIB Forward Control; compact -> SPORTS
+car iltis     c  102 25.5  4.6  1.30   # VW Iltis; compact -> SPORTS
+car inf       o  188  2.3  1.1 10.00   # Kyosho Inferno (R/C car, scaled up); odd -> ODDITIES
+car integr    a  184  3.8  1.5  3.20   # Lancia Delta Integrale; rally -> RALLY
+car inter     m  243  3.0  1.2  6.00   # Mad Max Interceptor (Ford Falcon XB); muscle -> MUSCLE & CLASSICS
+car inticer   d  218  3.5  1.5  1.50   # Inticer prerunner pickup (converted from 4x4 Evo 2); desert -> DESERT RACERS (a prerunner pickup, like the F-250 and Ranger prerunners)
+car jackyl    d  141  3.5  1.4  3.80   # Jackyl (buggy); desert -> DESERT RACERS
+car jaha      z 1071  2.6  1.2 20.00   # JAHA's speeder (absurd power); odd -> ODDITIES; over 400 km/h: UNLIMITED
+car jcj2a     c  106 12.6  3.3  1.35   # Willys Jeep CJ-2A; compact -> SPORTS
+car jcj5      c  127  7.0  2.9  1.39   # 1979 Jeep CJ-5; compact -> SPORTS
+car jcj5es    c  127 10.3  3.4  1.30   # Jeep CJ-5; compact -> SPORTS
+car jcj7      c  145  4.7  1.7  2.50   # Jeep CJ-7; compact -> SPORTS
+car jcon      c  146  4.2  1.6  3.80   # 2002 Jeep Wrangler Rubicon; compact -> SPORTS
+car jeepc     x  158  4.9  1.7  2.55   # Jeep Cherokee; suv -> 4X4
+car jetmax    o  192  0.9  0.5  6.00   # Jet boat; odd -> ODDITIES
+car jetta     a  240  2.5  1.2  3.20   # VW Jetta; rally -> RALLY
+car jimny     c  146  5.4  2.0  2.65   # Suzuki Jimny; compact -> SPORTS
+car jimy      w  125  5.4  2.0  3.20   # Coyote (stock; hillclimb buggy); stock car: keeps its class
+car johny     x  153  5.5  1.7  3.25   # Blaze (stock; Jeep Grand Cherokee-like); stock car: keeps its class
+car jpyj      c  133  9.5  3.3  1.35   # Jeep Wrangler YJ (Jurassic Park); compact -> SPORTS
+car jtjs      c  126 13.8  4.2  1.20   # Jeep Wrangler TJ; compact -> SPORTS
+car jxj       x  141 10.7  3.4  1.30   # Jeep Cherokee XJ 2-door; suv -> 4X4
+car jyj       c  147 11.0  3.7  1.25   # Jeep Wrangler YJ; compact -> SPORTS
+car jyjs      c  140 13.0  4.1  1.20   # Jeep Wrangler YJ; compact -> SPORTS
+car k100      e  191  3.9  1.9  2.50   # 1978 Kenworth K100 semi; truck -> TRUCKS; quicker than the stock TRUCKS cars (top 191 km/h vs at most 137, 0-50 1.9s vs the quickest stock 2.7s): FAST TRUCKS
+car k5blazer  u  227  2.7  1.2  5.80   # Chevrolet K5 Blazer "Blue Knight"; suv -> 4X4; quicker than the stock 4X4 cars (top 227 km/h vs at most 153, 0-50 1.2s vs the quickest stock 1.7s): 4X4 OPEN
+car k930e     o  162  6.5  2.7  1.55   # Komatsu 930E mining dump truck; work -> ODDITIES
+car karn      r  121  3.9  1.6  4.50   # Karnivore crawler; crawler -> ROCK CRAWLERS
+car kat       e  188  7.8  3.3  1.50   # MAN KAT 8x8 15t; truck -> TRUCKS; quicker than the stock TRUCKS cars (top 188 km/h vs at most 137, 0-50 3.3s vs the quickest stock 2.7s): FAST TRUCKS
+car kattt     e  208  5.4  2.7  1.80   # MAN KAT 8x8 trial truck; truck -> TRUCKS; quicker than the stock TRUCKS cars (top 208 km/h vs at most 137, 0-50 2.7s vs the quickest stock 2.7s): FAST TRUCKS
+car kc        r  146  3.5  1.2  6.00   # Nitto crawler; crawler -> ROCK CRAWLERS
+car kch1a     u  209  2.6  1.2  9.90   # Hummer H1 stage 2 (KC); suv -> 4X4; quicker than the stock 4X4 cars (top 209 km/h vs at most 153, 0-50 1.2s vs the quickest stock 1.7s): 4X4 OPEN
+car king5     x  150  3.7  1.7  4.90   # Chevrolet K5 Blazer stage 3; suv -> 4X4
+car king5a    x  150  3.7  1.5  4.90   # Chevrolet K5 Blazer stock; suv -> 4X4
+car kitcar    s  246  2.1  1.1  5.00   # McLaren-based kit car (KC); sports -> SPORTS CARS
+car kitt      m  237  2.3  1.1  7.50   # Pontiac Trans Am "KITT"; muscle -> MUSCLE & CLASSICS
+car kracker   r  145  2.7  1.2  2.50   # IC-Krawler; crawler -> ROCK CRAWLERS
+car laren     s  245  3.6  1.8  4.00   # McLaren F1 race edition; sports -> SPORTS CARS
+car lastv8    m  163  4.7  1.6  2.55   # Last of the V8 Interceptors (Ford Falcon XB); muscle -> MUSCLE & CLASSICS
+car lib       r  116  3.2  1.1  4.55   # Jeep Liberty crawler; crawler -> ROCK CRAWLERS
+car liberty   x  147  3.5  1.6  4.65   # Jeep Liberty; suv -> 4X4
+car lnt       e  134  4.3  1.7  3.00   # Ford LNT 6x6; truck -> TRUCKS; quicker than the stock TRUCKS cars (top 134 km/h vs at most 137, 0-50 1.7s vs the quickest stock 2.7s): FAST TRUCKS
+car loco      p  154  4.2  1.8  3.50   # Bushwhacker (stock; full-size pickup); stock car: keeps its class
+car low350    u  212  2.4  1.2  6.20   # Ford F-350 lowrider; pickup -> PICKUPS; quicker than the stock PICKUPS cars (top 212 km/h vs at most 174, 0-50 1.2s vs the quickest stock 1.4s): 4X4 OPEN
+car lowvit    c  146  5.9  2.7  2.65   # Suzuki Vitara, lowered; compact -> SPORTS
+car lr109     c   91    -  4.4  1.15   # Land Rover Series III 109 Safari; compact -> SPORTS
+car lr110     x  155  5.7  2.1  3.40   # Land Rover Defender 110; suv -> 4X4
+car lrd90     c  128  7.4  2.9  1.75   # Land Rover Defender 90; compact -> SPORTS
+car lro88     c  114 11.3  4.4  1.21   # Land Rover Series III 88 Safari; compact -> SPORTS
+car lrs3      c  113 23.1  5.0  1.15   # Land Rover Series III; compact -> SPORTS
+car lrs3s     c  116 19.3  4.9  1.15   # Land Rover Series III; compact -> SPORTS
+car mach1     m  236  2.2  1.0  7.50   # 1971 Ford Mustang Mach 1 (KC); muscle -> MUSCLE & CLASSICS
+car mach1a    m  156  3.5  1.6  2.80   # 1971 Ford Mustang Mach 1 street machine; muscle -> MUSCLE & CLASSICS
+car madmobo   o  136  5.5  2.1  2.65   # Mad Max Mobo (ride-on toy car); odd -> ODDITIES
+car malibu    m  169  3.3  1.6  2.80   # 1979 Chevrolet Malibu; muscle -> MUSCLE & CLASSICS
+car mantis    o  200  2.1  1.1  6.00   # Mantis speeder; odd -> ODDITIES
+car maxd      k  212  3.7  1.3  3.20   # Maximum Destruction monster truck; monster -> MONSTER TRUCKS
+car maxi      o  153  8.1  3.0  2.05   # Maxi-tastic (custom); odd -> ODDITIES
+car maz537    e  208  5.7  2.8  1.90   # MAZ-537 8x8; truck -> TRUCKS; quicker than the stock TRUCKS cars (top 208 km/h vs at most 137, 0-50 2.8s vs the quickest stock 2.7s): FAST TRUCKS
+car mbuggy    d  190  3.1  1.4  2.65   # Buzz buggy; desert -> DESERT RACERS
+car mcpn      k  199  3.3  1.3  2.50   # "Post Nuclear" McLaren F1 on monster tyres (Mad Max style); monster -> MONSTER TRUCKS (on monster tyres, like The Car Killer)
+car megm      o  300  3.3  1.8  3.55   # Mega-Mow (ride-on mower); odd -> ODDITIES
+car microbus  v  148  6.0  2.0  2.50   # VW Microbus; van -> VANS & BUSES
+car mini      a  175  5.2  2.4  2.00   # Mini Cooper S; rally -> RALLY
+car mini2     a  173  5.0  1.7  1.50   # Mini (custom Cooper); rally -> RALLY
+car minibugy  d  192  3.2  1.3  3.50   # Mini JCW buggy (Dakar); desert -> DESERT RACERS
+car miniorr   a  169  5.1  1.7  1.50   # Mini off-road racer; rally -> RALLY
+car minspdr   o  148  4.1  1.6  3.50   # Spider (8x8 off-road buggy, original design); odd -> ODDITIES
+car mitevo    a  183  4.1  1.4  3.20   # Mitsubishi Lancer Evo 7; rally -> RALLY
+car mitsu     s  274  2.7  1.2  2.00   # Mitsubishi Eclipse; sports -> SPORTS CARS
+car mmjim     c  145  5.4  2.0  2.65   # Suzuki Jimny, modified; compact -> SPORTS
+car mobo      o  145  5.4  2.1  2.65   # Mobo 3000 (ride-on toy car); odd -> ODDITIES
+car mog406    e  137  5.2  1.7  3.20   # Mercedes Unimog 406; truck -> TRUCKS; quicker than the stock TRUCKS cars (top 137 km/h vs at most 137, 0-50 1.7s vs the quickest stock 2.7s): FAST TRUCKS
+car monhum    k  277  2.1  1.1  4.20   # Monster Hummer; monster -> MONSTER TRUCKS
+car motox     q  139  5.3  2.7  3.20   # Motocross bike; atv -> QUADS & BIKES
+car msam      c  123  7.2  3.1  1.55   # Suzuki Samurai, modified; compact -> SPORTS
+car mtcuda    k  184  3.5  1.5  1.50   # Monster Cuda; monster -> MONSTER TRUCKS
+car murci     s  303  2.2  1.3  2.55   # Lamborghini Murcielago; sports -> SPORTS CARS
+car mustard   m  208  2.6  1.1  4.00   # 1970 Ford Mustang Boss; muscle -> MUSCLE & CLASSICS
+car myj       c  167  3.7  1.5  1.80   # Jeep Wrangler YJ, lifted ("Monster YJ": winch, snorkel, light bar); compact -> SPORTS
+car newmini   a  218  4.1  1.5  3.00   # BMW Mini Cooper; rally -> RALLY
+car nissanf   p  167  4.6  1.8  2.80   # Nissan Frontier; pickup -> PICKUPS
+car niva      c  123  9.5  2.7  1.40   # Lada Niva; compact -> SPORTS
+car nivatt    c  160  5.3  1.9  1.90   # Lada Niva Xtreme; compact -> SPORTS
+car nomad     m  233  3.0  1.4  2.80   # Chevrolet Nomad; muscle -> MUSCLE & CLASSICS
+car norweg    r  145  3.9  1.4  4.20   # Norwegian crawler; crawler -> ROCK CRAWLERS
+car nosmitsu  s  328  2.2  1.1  5.00   # Mitsubishi Eclipse (NOS); sports -> SPORTS CARS
+car novass    m  153  2.9  1.3  2.90   # 1966 Chevrolet Nova SS; muscle -> MUSCLE & CLASSICS
+car olds      m  262  2.8  1.2  3.20   # 1969 Oldsmobile; muscle -> MUSCLE & CLASSICS
+car outlaw    g  271  2.0  1.0 12.00   # Outlaw dirt-track car; race -> DRAG & RACE
+car outlaw2   g  271  2.0  1.0 12.00   # Outlaw dirt-track car 2; race -> DRAG & RACE
+car p404      m  162  7.6  2.3  1.80   # Peugeot 404; muscle -> MUSCLE & CLASSICS
+car p404x2    m  251  3.8  1.9  2.50   # Peugeot 404, modified; muscle -> MUSCLE & CLASSICS
+car p51d      o  122  2.4  1.1  4.50   # P-51D Mustang aircraft; odd -> ODDITIES
+car pajevo    d  178  3.7  1.4  3.30   # Mitsubishi Pajero Evo (Dakar); desert -> DESERT RACERS
+car patrol    u  200  3.6  1.3  3.00   # Nissan Patrol GU; suv -> 4X4; quicker than the stock 4X4 cars (top 200 km/h vs at most 153, 0-50 1.3s vs the quickest stock 1.7s): 4X4 OPEN
+car peug206   a  176  3.6  1.5  4.40   # Peugeot 206 WRC; rally -> RALLY
+car pico      p  174  3.7  1.4  3.60   # Utility (stock; pickup); stock car: keeps its class
+car pilot     q  167  2.8  1.3  7.50   # Honda Pilot FL400R (single-seat off-road buggy); atv -> QUADS & BIKES
+car plane     o   24    -    -  3.00   # Aeroplane (stock; light aircraft); stock car: keeps its class
+car plymouth  m  267  3.7  1.8  2.35   # 1970 Plymouth Barracuda; muscle -> MUSCLE & CLASSICS
+car pod       o  189  3.5  1.4  3.50   # Speeder (stock bonus car; 6-wheel sci-fi pod); odd -> ODDITIES; a bonus car: classed like the fan cars, still won in its championship
+car pol       m  248  2.6  1.3  4.20   # NYPD Ford police car; muscle -> MUSCLE & CLASSICS
+car police    m  178  4.8  2.2  2.80   # Police (stock bonus car; police saloon); muscle -> MUSCLE & CLASSICS; a bonus car: classed like the fan cars, still won in its championship
+car por356a   s  164  5.1  2.1  2.50   # Porsche 356A; sports -> SPORTS CARS
+car porsche   s  261  2.7  1.2  3.10   # Porsche 911R; sports -> SPORTS CARS
+car pumkin    m  181  4.2  1.3  2.30   # 1958 Chevrolet; muscle -> MUSCLE & CLASSICS
+car pv3s      t   75    -  3.1  2.75   # Praga V3S 6x6; truck -> TRUCKS; slower than every stock TRUCKS car (75 km/h)
+car rail6     d  258  2.3  1.1  6.80   # Mad Max rail buggy (KC); desert -> DESERT RACERS
+car rally     a  182  5.2  2.1  2.50   # Rally 2.0i (stock bonus car; front-drive rally saloon); rally -> RALLY; a bonus car: classed like the fan cars, still won in its championship
+car ram15     p  188  3.8  1.5  2.70   # Dodge Ram; pickup -> PICKUPS
+car rangerov  u  226  3.1  1.3  4.20   # Range Rover; suv -> 4X4; quicker than the stock 4X4 cars (top 226 km/h vs at most 153, 0-50 1.3s vs the quickest stock 1.7s): 4X4 OPEN
+car raptor1   q  147  3.7  1.5  2.00   # Yamaha Raptor 660R; atv -> QUADS & BIKES
+car raptordk  d  201  3.5  1.3  4.00   # Ford Raptor RS (rally raid); desert -> DESERT RACERS
+car rascal    v  146  5.4  2.1  2.65   # Bedford Rascal; van -> VANS & BUSES
+car rascmon   k  201  3.4  1.3  3.65   # Rascal monster; monster -> MONSTER TRUCKS
+car rav4      u  214  3.9  1.5  2.65   # Toyota RAV4; suv -> 4X4; quicker than the stock 4X4 cars (top 214 km/h vs at most 153, 0-50 1.5s vs the quickest stock 1.7s): 4X4 OPEN
+car rb        o  178  3.6  1.7  2.30   # Rock Basher (custom); odd -> ODDITIES
+car rb2vr2    r  155  3.6  1.4  2.10   # Red Bull Rockit crawler; crawler -> ROCK CRAWLERS
+car rb2vr23d  r  155  3.6  1.4  2.10   # Red Bull Rockit crawler; crawler -> ROCK CRAWLERS
+car rckcrsh   r  115  8.1  2.8  3.40   # Rock Crusher crawler; crawler -> ROCK CRAWLERS
+car rckhr     r  139  3.6  1.5  4.40   # Red Bull RockHer II crawler; crawler -> ROCK CRAWLERS
+car rckstlkr  r  215  2.7  1.2  6.30   # Rock Stalker crawler; crawler -> ROCK CRAWLERS
+car reliant   v  122 11.1  2.6  1.20   # Reliant Supervan; van -> VANS & BUSES
+car rgh3      u  205  3.1  1.2  5.20   # Hummer H3; suv -> 4X4; quicker than the stock 4X4 cars (top 205 km/h vs at most 153, 0-50 1.2s vs the quickest stock 1.7s): 4X4 OPEN
+car rig       t  134  5.9  1.9  1.90   # Semi rig (KC); truck -> TRUCKS
+car rig3      t  134  5.9  1.9  1.90   # Cab-over semi rig (KC); truck -> TRUCKS
+car rig4      e  199  2.2  1.0  5.90   # Mad Max semi rig (KC); truck -> TRUCKS; quicker than the stock TRUCKS cars (top 199 km/h vs at most 137, 0-50 1.0s vs the quickest stock 2.7s): FAST TRUCKS
+car rolls     m  223  2.7  1.2  1.90   # Rolls-Royce; muscle -> MUSCLE & CLASSICS
+car romper    u  268  2.5  1.0  4.40   # Romper: 1968 Chevrolet El Camino off-road conversion; pickup -> PICKUPS; quicker than the stock PICKUPS cars (top 268 km/h vs at most 174, 0-50 1.0s vs the quickest stock 1.4s): 4X4 OPEN
+car rover     x  148  5.2  1.7  3.10   # Cairo (stock; Land Rover Defender-like); stock car: keeps its class
+car rt        m  170  3.2  1.5  2.80   # 1969 Dodge Charger R/T; muscle -> MUSCLE & CLASSICS
+car rta       m  190  2.4  1.2  4.20   # 1969 Dodge Charger; muscle -> MUSCLE & CLASSICS
+car rubicon   q   73    -  1.5  3.50   # Honda Rubicon 500; atv -> QUADS & BIKES
+car s2109     c   86    -  7.1  1.08   # Land Rover Series II 109; compact -> SPORTS
+car s2alw     c  146  4.6  1.6  3.60   # Land Rover Series IIA Lightweight; compact -> SPORTS
+car s3crl     r  147  3.7  1.3  2.60   # Land Rover Series III crawler; crawler -> ROCK CRAWLERS
+car sabre     o  199  1.9  1.0  6.00   # Sabre speeder; odd -> ODDITIES
+car samu      c  142  7.2  2.1  2.30   # Samu (stock; Suzuki Samurai-like); stock car: keeps its class
+car samu2     c  145  5.4  2.0  2.65   # Samu II (stock Samu derivative); compact -> SPORTS
+car samuzuk   c  144  5.6  2.0  2.55   # 1988 Suzuki Samurai; compact -> SPORTS
+car sander    d  175  3.1  1.3  6.30   # Ford F-150 Baja runner; desert -> DESERT RACERS
+car sandrail  d  234  2.2  1.1 10.50   # Sandrail (KC); desert -> DESERT RACERS
+car sc800     x  136  3.6  1.7  2.40   # International Scout 800; suv -> 4X4
+car scr       r   89    -  1.4  4.55   # Chevrolet Silverado comp rig; crawler -> ROCK CRAWLERS
+car scribbit  d  195  2.7  1.2  5.20   # Ford Ranger prerunner (NemesiS); desert -> DESERT RACERS
+car scribler  d  195  3.2  1.3  5.20   # Ford F-150 Baja (Dominator); desert -> DESERT RACERS
+car shut      r  175  3.2  1.1  6.20   # International Scout II trail rig; crawler -> ROCK CRAWLERS
+car sidecar   z  286  2.4  1.3  3.25   # Mad Max sidecar motorcycle; atv -> QUADS & BIKES; far quicker than the rest of QUADS & BIKES (top 286 km/h vs median 136, 0-50 1.3s vs 1.5s): UNLIMITED
+car silvrw    p  176  4.2  1.8  2.70   # 1993 Chevrolet Silverado; pickup -> PICKUPS
+car silvy4    p  177  3.6  1.4  3.70   # 1993 Chevrolet Silverado 4x4; pickup -> PICKUPS
+car sixie     e  149  5.0  1.8  3.75   # Heavy Metal 6x6; truck -> TRUCKS; quicker than the stock TRUCKS cars (top 149 km/h vs at most 137, 0-50 1.8s vs the quickest stock 2.7s): FAST TRUCKS
+car skate     o  101 14.8  4.8  3.50   # Skateboard ("Sk8r-Dude"); odd -> ODDITIES
+car skool     v  157  6.9  2.7  1.65   # 4x4 school bus; van -> VANS & BUSES
+car skullc    v  172  5.8  2.3  1.90   # Skullcrusher (Carmageddon 2 armoured battle van, 6 wheels); van -> VANS & BUSES (Ant 2026-10-19: an armoured battle van on 0.48 m tyres, not a monster truck)
+car skyline   s  278  3.6  1.8  4.50   # Nissan Skyline R34 GT-T; sports -> SPORTS CARS
+car slamjim   c   60    -  2.3  4.00   # Suzuki Jimny lowrider; compact -> SPORTS; slower than every stock SPORTS car (60 km/h)
+car slinky    r  109  9.4  3.0  3.40   # Slinky (crawler); crawler -> ROCK CRAWLERS
+car snpr      r  146  3.3  1.2  2.60   # Sniper crawler; crawler -> ROCK CRAWLERS
+car soda      p  163  4.0  1.4  2.50   # Sodar (stock; pickup); stock car: keeps its class
+car sp        o  283  4.7  1.7  2.20   # Speeder bike (Star Wars); odd -> ODDITIES
+car spdstr    m  232  2.4  1.1  6.00   # Speedstar custom roadster (KC); muscle -> MUSCLE & CLASSICS
+car speedy    k  175  5.7  2.0  2.50   # Patriot (on giant tyres); monster -> MONSTER TRUCKS
+car sprint    g  271  2.7  1.1 13.70   # Outlaw sprint car (KC); race -> DRAG & RACE
+car spyhunt   s  251  2.4  1.2  2.00   # G-6155 Interceptor (from Spy Hunter); sports -> SPORTS CARS
+car stwgn     m  147  3.8  1.5  4.55   # 1982 station wagon; muscle -> MUSCLE & CLASSICS
+car stycrl    r  146  3.5  1.4  3.80   # Steyr crawler; crawler -> ROCK CRAWLERS
+car styspd    r  132  3.3  1.2  4.20   # Steyr Spider; crawler -> ROCK CRAWLERS
+car supra     s  317  2.5  1.2  8.25   # Toyota Supra; sports -> SPORTS CARS
+car swndr     d  182  3.6  1.4  3.30   # Sidewinder (hillclimb build); hillclimb -> EXTREME; quicker than the stock EXTREME cars (top 182 km/h vs at most 125, 0-50 1.4s vs the quickest stock 1.4s): DESERT RACERS
+car sxj       d  210  3.5  1.5  2.40   # JeepSpeed Cherokee XJ racer; desert -> DESERT RACERS
+car sxs       q  136  4.6  1.7  1.80   # Yamaha Rhino side-by-side; atv -> QUADS & BIKES
+car t98       x  167  4.3  1.5  2.40   # Kombat T-98 armoured SUV; suv -> 4X4
+car ta        m  169  3.4  1.7  2.80   # 1979 Pontiac Trans Am; muscle -> MUSCLE & CLASSICS
+car tac       r  159  3.6  1.5  5.00   # Toyota Tacoma crawler; crawler -> ROCK CRAWLERS
+car tacoma    d  228  3.0  1.2  3.00   # Toyota Tacoma dune runner; desert -> DESERT RACERS
+car tank      o   34    -    -  1.85   # Tank; work -> ODDITIES
+car tatnu     t  110  9.6  3.5  1.15   # Tatra 813; truck -> TRUCKS
+car tatra     t  132  8.3  3.0  2.85   # 8x8 Behemoth (stock; Tatra-like 8x8 truck); stock car: keeps its class
+car taxi      o   90    -  1.6 10.00   # Slammed taxi (absurd power); odd -> ODDITIES
+car tehe      t  134  8.8  2.7  2.90   # 4x4 Freighter (stock; heavy 4x4 truck); stock car: keeps its class
+car teri      c  152  6.0  2.1  2.30   # Wyle (stock; Willys/Jeep-like); stock car: keeps its class
+car tfj4      c  133  8.9  3.3  1.40   # Toyota FJ40; compact -> SPORTS
+car tiger     d  227  2.4  1.1  1.60   # Tiger (V8 4x4 off-road racer, original design); desert -> DESERT RACERS
+car tooth     t  125  6.5  2.0  1.75   # Sweet Tooth (Twisted Metal ice-cream truck); truck -> TRUCKS
+car torinoo   m  186  3.0  1.2  2.00   # Ford Torino, 4x4; muscle -> MUSCLE & CLASSICS
+car toyo      a  155  5.6  1.7  2.80   # Rallycroxx (stock bonus car; Toyota rally-cross); rally -> RALLY; a bonus car: classed like the fan cars, still won in its championship
+car toyrsc    d  190  3.8  1.3  3.20   # Toyota RSC (rally raid); hillclimb -> EXTREME; quicker than the stock EXTREME cars (top 190 km/h vs at most 125, 0-50 1.3s vs the quickest stock 1.4s): DESERT RACERS
+car traktor   o   84    -  2.2  1.00   # Tractor; work -> ODDITIES
+car trophy    d  235  2.3  1.1  8.70   # Ford F-350 trophy truck; desert -> DESERT RACERS
+car truggy    d  183  2.7  1.5  5.40   # Truggy; desert -> DESERT RACERS
+car tsam      c  123 14.3  5.2  1.20   # Suzuki Samurai; compact -> SPORTS
+car ttf150    d  194  3.3  1.2  3.09   # Ford F-150 trophy truck (ElGonzo); desert -> DESERT RACERS
+car tubcrl    r  147  4.2  1.5  2.60   # Diablo tube crawler; crawler -> ROCK CRAWLERS
+car uaz469    c  124  5.4  1.9  3.60   # UAZ-469; compact -> SPORTS
+car unim      t  130  5.4  1.9  1.50   # Mercedes Unimog; truck -> TRUCKS
+car van       v  149 10.6  3.5  1.30   # Tour van (Jurassic Park); van -> VANS & BUSES
+car vehi      c  151  5.6  1.9  2.60   # Bear (stock; Hummer-like); stock car: keeps its class
+car veyron    s  144  3.6  1.9  4.00   # Bugatti Veyron; sports -> SPORTS CARS
+car vfts      a  210  3.6  1.5  1.80   # Lada VFTS (rally); rally -> RALLY
+car vitara    c  146  5.4  2.0  2.65   # Suzuki Vitara; compact -> SPORTS
+car volvo26x  a   57    -  3.1  2.38   # Volvo 260 cross country; rally -> RALLY
+car voodoo    m  191  3.4  1.5  3.00   # Voodoo lowrider (from GTA: Vice City); muscle -> MUSCLE & CLASSICS
+car vw        d  177  4.5  1.4  2.60   # Class 5 buggy (VW); desert -> DESERT RACERS
+car vw2       d  174  4.4  1.7  2.50   # Class 5 Beetle; desert -> DESERT RACERS
+car vwcon     u  184  3.9  1.4  3.40   # VW Concept T; suv -> 4X4; quicker than the stock 4X4 cars (top 184 km/h vs at most 153, 0-50 1.4s vs the quickest stock 1.7s): 4X4 OPEN
+car vwrocr    r  164  3.5  1.4  2.20   # VW rock crawler; crawler -> ROCK CRAWLERS
+car wall      w   95    -  1.5  3.20   # Hillclimber (stock; hillclimb buggy); stock car: keeps its class
+car warbi     a  129  9.7  2.7  1.47   # Wartburg; rally -> RALLY
+car wchair    o   67    -  1.6  4.20   # Wheelchair; odd -> ODDITIES
+car wdmb      c  106 12.6  3.3  1.35   # Willys MB (desert SAS); compact -> SPORTS
+car wh        u  200  3.9  1.5  2.85   # HF Warthog (Halo); suv -> 4X4; quicker than the stock 4X4 cars (top 200 km/h vs at most 153, 0-50 1.5s vs the quickest stock 1.7s): 4X4 OPEN
+car wheels    e  192  3.8  1.7  4.20   # 8x8 Insanely (custom 8x8); truck -> TRUCKS; quicker than the stock TRUCKS cars (top 192 km/h vs at most 137, 0-50 1.7s vs the quickest stock 2.7s): FAST TRUCKS
+car wideboy   a  211  2.3  1.1  8.00   # Suzuki Jimny 'Wideboy' racer; rally -> RALLY
+car willys    c  117  9.7  3.5  2.00   # 1942 Willys Jeep; compact -> SPORTS
+car wini      v  145  8.1  2.5  1.35   # Winnebago motorhome; van -> VANS & BUSES
+car winimon   k  171  5.2  2.3  2.35   # Monster camper (Winnebago); monster -> MONSTER TRUCKS
+car wjmb      c  106 12.6  3.3  1.35   # Willys MB; compact -> SPORTS
+car wrang     c  160  4.5  1.6  4.00   # Jeep Wrangler; compact -> SPORTS
+car wrek      t  134  5.9  1.9  1.90   # Tow truck rollback (KC); truck -> TRUCKS
+car wrmb      c  106 12.6  3.3  1.35   # Willys MB with machine gun; compact -> SPORTS
+car wrx       a  187  3.5  1.5  4.60   # Subaru Impreza WRX (2000 rally); rally -> RALLY
+car xj        r  152  3.9  1.3  4.50   # Jeep Cherokee XJ trail rig; crawler -> ROCK CRAWLERS
+car xrc       r  135  3.6  1.3  5.20   # XRC rock crawler; crawler -> ROCK CRAWLERS
+car yelint    m  210  4.8  1.7  2.65   # Yellow Interceptor (Mad Max Falcon); muscle -> MUSCLE & CLASSICS
+car yogi      k  145  3.6  1.5  4.20   # Firestone Bigfoot monster truck; monster -> MONSTER TRUCKS
+car yugo      a  146  6.2  2.4  3.00   # Zastava Yugo Koral; rally -> RALLY
+car z28cam    m  222  2.5  1.1  4.20   # 1979 Chevrolet Camaro Z28; muscle -> MUSCLE & CLASSICS
+car zuklp     c  168  4.2  1.4  3.50   # Suzuki (lifted); compact -> SPORTS
+car zukmth    c  131  6.0  2.0  2.00   # Suzuki Samurai (hardtop); compact -> SPORTS
+car zukmtl    c  131  6.0  2.0  2.00   # Suzuki Samurai; compact -> SPORTS
