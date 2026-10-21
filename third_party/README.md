@@ -61,3 +61,22 @@ For the player download (tools/release/linux.sh), also:
   program copied up as innoextract, the Windows one as innoextract.exe, and its license/ folder
   (the libraries built into it: Boost, liblzma, bzip2, zlib, libstdc++). It unpacks the GOG
   installer for the player without running it.
+
+For the Windows download (tools/release/windows.sh, in MSYS2's UCRT64 shell), also:
+
+- Zig 0.17.0: the official Windows x86_64 build from ziglang.org (zig-x86_64-windows-0.17.0.zip,
+  sha256 b5663f69581dcf391293fbf16c06cb80d81d806545ce618b4d0bab7f0eb8c428), unpacked as
+  zig-x86_64-windows-0.17.0/.
+- FreeType 2.15.0 (FreeType Licence): the source release from
+  download.savannah.gnu.org/releases/freetype (freetype-2.15.0.tar.xz, sha256
+  93cd47eb719c325107f2d3cf087d06299e944c3b48a40b55537302304dea1dd5), unpacked as
+  freetype-2.15.0/. windows.sh builds the modules OpenType fonts need with Zig, for the runtime and
+  the launcher (MSYS2's static FreeType needs HarfBuzz, which is C++, and GLib).
+- FFmpeg 9.0.2 (LGPL 2.1): the source release from ffmpeg.org/releases (ffmpeg-9.0.2.tar.xz,
+  sha256 8c3850283eb25fa026482078a04051e0be17347b09ef81a0849bec15a96e002e), unpacked as
+  ffmpeg-9.0.2/. windows.sh builds ffmpeg.exe from it with MSYS2's gcc, static, with only what the
+  intro videos use (AVI, Indeo 5, PCM, raw output): 3.5 MB.
+- innoextract as above: the Windows zip's innoextract.exe and license/ in innoextract/.
+- PyInstaller: MSYS2's package (mingw-w64-ucrt-x86_64-pyinstaller, 6.22.3), with its Python and
+  mingw-w64-ucrt-x86_64-python-capstone.
+- downloads/: the archives above as they were fetched.

@@ -56,7 +56,13 @@ Used alongside it:
 - **Capstone** (the translator's x86 disassembler) — BSD licence. <https://www.capstone-engine.org>
 - **libarchive** (reading fan downloads) — BSD licence, the system's copy.
 - **FFmpeg** (playing the intro videos) — LGPL/GPL, the system's copy or a separate program
-  beside the game. <https://ffmpeg.org>
+  beside the game. <https://ffmpeg.org> The Windows download's is FFmpeg 9.0.2 under the LGPL 2.1,
+  built unchanged from its source release with only what the videos use (licenses/ffmpeg-SOURCE.txt
+  in the download says how).
+- **GNU libiconv** (Windows, used by SDL 3 there) — LGPL 2.1. Linked on your computer with the rest
+  of the game, from the libraries in the download.
+- The libraries 7-Zip and libarchive use on Windows, as MSYS2 builds them: bzip2, xz, Zstandard,
+  LZ4, BLAKE2, zlib, libiconv, and GCC's runtime libraries (GPL with the GCC runtime exception).
 - **7-Zip** (reading old self-extracting fan downloads on Windows, never run as an installer) —
   GNU LGPL with the unRAR restriction. Copyright © Igor Pavlov.
 - **innoextract** (unpacking the GOG installer without running it) — zlib licence. Copyright ©
