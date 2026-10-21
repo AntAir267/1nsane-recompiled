@@ -394,6 +394,10 @@ static int build_game(void)
 
     int jobs = SDL_GetNumLogicalCPUCores();
     jobs = jobs > 2 ? jobs - 1 : 1;
+    if (SDL_getenv("INSANE_JOBS"))      /* (fewer, to keep the computer free for other things) */
+        jobs = SDL_atoi(SDL_getenv("INSANE_JOBS"));
+    if (jobs < 1)
+        jobs = 1;
     if (jobs > 16)
         jobs = 16;
     SDL_Process *procs[16] = {0};
@@ -1082,10 +1086,21 @@ int main(int argc, char **argv)
     SDL_SetRenderVSync(ren, 1);
     have_found = detect(found, sizeof found);
     int quit = 0, was_working = 0;
+    /* INSANE_LAUNCHER_SHOT=FILE saves each page it shows as FILE-<page>.bmp and quits on the first, or with
+       INSANE_LAUNCHER_PRESS=N (the Nth button of the first page) when the work it starts has ended. */
+    const char *shot = SDL_getenv("INSANE_LAUNCHER_SHOT"), *auto_press = SDL_getenv("INSANE_LAUNCHER_PRESS");
+    int shot_page = -1, page_frames = 0;
     while (!quit) {
         SDL_Event e;
+        if (auto_press && frame == 5) {
+            SDL_Event a = {0};
+            a.type = SDL_EVENT_USER;
+            SDL_PushEvent(&a);
+        }
         while (SDL_PollEvent(&e)) {
             int act = -1;
+            if (e.type == SDL_EVENT_USER && auto_press)
+                act = SDL_atoi(auto_press);
             switch (e.type) {
             case SDL_EVENT_QUIT: quit = 1; break;
             case SDL_EVENT_GAMEPAD_ADDED: SDL_OpenGamepad(e.gdevice.which); break;
@@ -1144,14 +1159,20 @@ int main(int argc, char **argv)
         } else if (was_working && page != P_WORK)
             was_working = 0;
         draw();
-        const char *shot = SDL_getenv("INSANE_LAUNCHER_SHOT");
-        if (shot && frame == 20) {
-            SDL_Surface *sf = SDL_RenderReadPixels(ren, NULL);
-            if (sf) {
-                SDL_SaveBMP(sf, shot);
-                SDL_DestroySurface(sf);
+        if (shot) {
+            if (page != shot_page)
+                shot_page = page, page_frames = 0;
+            if (++page_frames == 20) {
+                char f[1100];
+                SDL_snprintf(f, sizeof f, "%s-%d.bmp", shot, page);
+                SDL_Surface *sf = SDL_RenderReadPixels(ren, NULL);
+                if (sf) {
+                    SDL_SaveBMP(sf, f);
+                    SDL_DestroySurface(sf);
+                }
+                if (!auto_press || page == P_DONE || page == P_ERROR)
+                    quit = 1;
             }
-            quit = 1;
         }
     }
     SDL_Quit();
