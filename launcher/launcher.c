@@ -36,6 +36,7 @@
 
 static char bundle[1024], user[1024];
 static char version[128];
+static char release[32];                /* (VERSION's second word, as 0.1.1-alpha: shown by the title) */
 
 /* ------------------------------------------------------------------ the shared state */
 static SDL_Mutex *lock;
@@ -1024,7 +1025,8 @@ static void draw(void)
     SDL_SetRenderDrawColor(ren, 10, 14, 28, 255);
     SDL_RenderClear(ren);
     rect(0, 0, W, 4, 0xf0d020, 255);
-    text(48, 36, "1NSANE: Recompiled", 40, 0xf8d830);
+    float tw = text(48, 36, "1NSANE: Recompiled", 40, 0xf8d830);
+    text(48 + tw + 18, 56, release, 18, 0x9098b0);
     char st[256], de[1024];
     double pr;
     SDL_LockMutex(lock);
@@ -1113,6 +1115,13 @@ static void find_folders(void)
     for (char *c = version; *c; c++)
         if (*c == '\n' || *c == '\r')
             *c = 0;
+    const char *r = SDL_strchr(version, ' ');
+    if (r && r[1] >= '0' && r[1] <= '9') {
+        SDL_strlcpy(release, r + 1, sizeof release);
+        char *e = SDL_strchr(release, ' ');
+        if (e)
+            *e = 0;
+    }
 }
 
 int main(int argc, char **argv)

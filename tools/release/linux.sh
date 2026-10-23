@@ -48,7 +48,8 @@ cp "$SDL/lib/libSDL3.a" "$B/lib/"
 cp runtime/cpu.h runtime/runtime.h "$B/include/"
 cp builds/gog_1_0.py builds/gog_1_0.manifest.sha256 "$B/builds/"
 sha256sum gen/funcs.h | cut -c1-64 > "$B/FUNCS_SHA256"
-echo "1nsane-recompiled $(date -u +%Y-%m-%d) $(git rev-parse --short HEAD)" > "$B/VERSION"
+REL=$(cat tools/release/VERSION)        # (the release: 0.1.1-alpha; the launcher shows it)
+echo "1nsane-recompiled $REL $(date -u +%Y-%m-%d) $(git rev-parse --short HEAD)" > "$B/VERSION"
 
 echo "== link-time stand-ins for the system's Vulkan, FreeType and zlib (the players' own are used)"
 for spec in vulkan:libvulkan.so.1 freetype:libfreetype.so.6 z:libz.so.1; do
@@ -134,5 +135,5 @@ EOF
 cp assets/icon/1nsane-recompiled.png "$A/1nsane-recompiled.png"
 RUNTIME=()                  # (appimagetool fetches its runtime each time unless it is given one)
 [ -f "$ROOT/third_party/appimage-runtime-x86_64" ] && RUNTIME=(--runtime-file "$ROOT/third_party/appimage-runtime-x86_64")
-ARCH=x86_64 "$ROOT/third_party/appimagetool-x86_64.AppImage" --no-appstream "${RUNTIME[@]}" "$A" "$OUT/1NSANE_Recompiled-x86_64.AppImage" >/dev/null
-ls -la "$OUT/1NSANE_Recompiled-x86_64.AppImage"
+ARCH=x86_64 "$ROOT/third_party/appimagetool-x86_64.AppImage" --no-appstream "${RUNTIME[@]}" "$A" "$OUT/1NSANE_Recompiled-$REL-x86_64.AppImage" >/dev/null
+ls -la "$OUT/1NSANE_Recompiled-$REL-x86_64.AppImage"
