@@ -50,3 +50,10 @@ void vkr_scene_end(void);
 void vkr_options(void);
 /* Flip on the GPU side: the colour images of a flip chain move as its memory did (ddraw.c) */
 void vkr_flip(Surface *s, Surface *t);
+
+/* A texture's pixels as they were when the call being run was made, if the game has written them
+   since (vkthread.c keeps a copy at the write's Lock instead of waiting for the render thread), with
+   its dirty counter then; NULL: the program's memory is still as it was. The render thread only. */
+const uint8_t *vk_snap_pixels(const Surface *s, unsigned long *dirty);
+/* the time spent making pipelines so far (ms) */
+double vkr_pipe_ms(void);

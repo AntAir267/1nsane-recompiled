@@ -76,6 +76,40 @@ static double now_real_ms(void)
 static double sync_ms, ahead_ms;        /* the game thread's waits for it: vk_sync's, a frame ahead's */
 static unsigned long syncs, aheads;
 
+/* INSANE_FRAME_TRACE=<file>: a line a frame at exit, for finding the slow ones: the game thread's time
+   from one present to the next (wall, its CPU, its waits for the render thread: a frame ahead, and to
+   catch up, with what for), and the render thread's for the same frame (its CPU, the present's wall) */
+#define TRACE_MAX 200000
+typedef struct { float wall, cpu, ahead, sync; uint16_t nsync, why; float r_wall, r_cpu, r_present, r_pipe; } FrameTrace;
+static FrameTrace *trace;
+static char trace_path[512];
+static double tr_wall0, tr_cpu0, tr_sync0, tr_rwall0, tr_rcpu0, tr_rpipe0;
+static unsigned long tr_syncs0;
+static unsigned tr_why;                 /* what this frame's catch-ups were for (SYNC_*) */
+static int sync_why;                    /* the next vk_sync's reason */
+enum { SYNC_CPU = 1, SYNC_GONE = 2, SYNC_FAR = 4, SYNC_SHTERR = 8, SYNC_LIGHTMAP = 16, SYNC_OPTIONS = 32, SYNC_OTHER = 64 };
+/* Textures written while the render thread may still read them for calls made before (the game
+   rewrites some every frame): a copy of their pixels at the write's Lock, for the calls made up to
+   then (by number: seq), instead of waiting for the render thread. It looks a texture's copy up as it
+   reads it (vk_snap_pixels), having first said which surface it reads (rd_s), so a Lock either finds
+   its read done or the copy there first. Freed once the render thread is past them. */
+#define SNAP_MAX 64
+typedef struct { const Surface *s; unsigned long seq, dirty; uint8_t *px; } Snap;
+static Snap snaps[SNAP_MAX];
+static int nsnaps;                      /* (under snap_lk) */
+static atomic_int snaps_live;
+static pthread_mutex_t snap_lk = PTHREAD_MUTEX_INITIALIZER;
+static unsigned long cur_cmd;           /* the render thread's: the number of the call it runs */
+static const Surface *_Atomic rd_s;     /* ... and the surface whose pixels it reads in it */
+static unsigned long snaps_made;
+
+static double thread_cpu_now(void)
+{
+    struct timespec t;
+    clock_gettime(CLOCK_THREAD_CPUTIME_ID, &t);
+    return t.tv_sec * 1000.0 + t.tv_nsec / 1e6;
+}
+
 static Block *block_new(size_t need)
 {
     Block *b = NULL;
@@ -301,7 +335,18 @@ static void run(const Cmd *c)
         memcpy(&s, p, sizeof s);
         const int *r = (const int *)(p + 8);       /* has, rect[4] */
         memcpy(vkr.gamma, p + 32, sizeof vkr.gamma);
+        double tp = trace ? now_real_ms() : 0;
         vkr_present(s, r[0] ? r + 1 : NULL);
+        unsigned long fd = atomic_load(&frames_done);
+        if (trace && fd < TRACE_MAX) {
+            double w = now_real_ms(), cpu = thread_cpu_now();
+            trace[fd].r_present = (float)(w - tp);
+            trace[fd].r_wall = (float)(tr_rwall0 ? w - tr_rwall0 : 0);
+            trace[fd].r_cpu = (float)(tr_rcpu0 ? cpu - tr_rcpu0 : 0);
+            double pm = vkr_pipe_ms();
+            trace[fd].r_pipe = (float)(pm - tr_rpipe0);
+            tr_rwall0 = w, tr_rcpu0 = cpu, tr_rpipe0 = pm;
+        }
         atomic_fetch_add(&frames_done, 1);
         if (atomic_load(&waiting)) {    /* (the game thread may be a frame ahead, waiting for this) */
             pthread_mutex_lock(&lk);
@@ -351,8 +396,10 @@ static void *render_main(void *arg)
         if (at < ready) {
             while (at < ready) {
                 const Cmd *c = (const Cmd *)(head->data + at);
+                cur_cmd = ran + 1;
                 run(c);
                 at += c->size;
+                atomic_store(&rd_s, NULL);
                 atomic_store(&done, ++ran);
             }
             continue;
@@ -412,6 +459,11 @@ static int going(void)
     if (!want)
         return 0;
     head = tail = block_new(BLOCK);
+    const char *tp = getenv("INSANE_FRAME_TRACE");
+    if (tp && *tp) {
+        snprintf(trace_path, sizeof trace_path, "%s", tp);
+        trace = calloc(TRACE_MAX, sizeof *trace);
+    }
     pthread_attr_t at;
     pthread_attr_init(&at);
     pthread_attr_setstacksize(&at, 8 << 20);
@@ -445,6 +497,105 @@ void vk_sync(void)
     pthread_mutex_unlock(&lk);
     sync_ms += now_real_ms() - t0;
     syncs++;
+    tr_why |= sync_why ? (unsigned)sync_why : SYNC_OTHER;
+    sync_why = 0;
+}
+
+/* INSANE_TEX_SNAP=0: a texture's write waits for the render thread instead (to compare) */
+static int getenv_snap_off(void)
+{
+    static int v = -1;
+    if (v < 0) {
+        const char *e = getenv("INSANE_TEX_SNAP");
+        v = e && *e == '0';
+    }
+    return v;
+}
+
+/* (the game thread) the copies the render thread is past */
+static void snaps_free_done(int all)
+{
+    if (!atomic_load(&snaps_live))
+        return;
+    unsigned long d = atomic_load(&done);
+    pthread_mutex_lock(&snap_lk);
+    int k = 0;
+    for (int i = 0; i < nsnaps; i++) {
+        if (all || snaps[i].seq <= d)
+            free(snaps[i].px);
+        else
+            snaps[k++] = snaps[i];
+    }
+    nsnaps = k;
+    atomic_store(&snaps_live, k);
+    pthread_mutex_unlock(&snap_lk);
+}
+
+/* (the game thread, at a write's Lock of a texture) its pixels kept for the calls made so far; 0 if
+   there is no room (then it waits for the render thread as before) */
+static int snap_take(Surface *s)
+{
+    snaps_free_done(0);
+    size_t n = (size_t)s->pitch * s->height;
+    if (!s->mem || !n || n > s->memsize)
+        return 0;
+    uint8_t *px = malloc(n);
+    if (!px)
+        return 0;
+    memcpy(px, gptr(s->mem), n);
+    pthread_mutex_lock(&snap_lk);
+    if (nsnaps == SNAP_MAX) {
+        pthread_mutex_unlock(&snap_lk);
+        free(px);
+        return 0;
+    }
+    snaps[nsnaps++] = (Snap){s, nput, s->dirty, px};
+    atomic_store(&snaps_live, nsnaps);
+    pthread_mutex_unlock(&snap_lk);
+    snaps_made++;
+    /* the render thread may be reading these pixels now (it looked before the copy was there):
+       its call ends first */
+    while (atomic_load(&rd_s) == s && atomic_load(&done) < nput)
+        __builtin_ia32_pause();
+    return 1;
+}
+
+const uint8_t *vk_snap_pixels(const Surface *s, unsigned long *dirty)
+{
+    if (!on)
+        return NULL;
+    atomic_store(&rd_s, s);             /* (said before looking: snap_take's side looks the other way round) */
+    if (!atomic_load(&snaps_live))
+        return NULL;
+    const Snap *best = NULL;
+    pthread_mutex_lock(&snap_lk);
+    for (int i = 0; i < nsnaps; i++)
+        if (snaps[i].s == s && snaps[i].seq >= cur_cmd && (!best || snaps[i].seq < best->seq))
+            best = &snaps[i];
+    const uint8_t *px = best ? best->px : NULL;
+    if (best && dirty)
+        *dirty = best->dirty;
+    pthread_mutex_unlock(&snap_lk);
+    return px;
+}
+
+static void trace_write(void)
+{
+    if (!trace)
+        return;
+    FILE *f = fopen(trace_path, "w");
+    if (!f)
+        return;
+    fprintf(f, "# frame game_wall game_cpu ahead_wait sync_wait syncs why render_wall render_cpu render_present render_pipelines"
+               "  (ms; why: 1 cpu access, 2 surface gone, 4 far mesh, 8 shadow terrain, 16 lightmap, 32 options, 64 other)\n");
+    unsigned long n = atomic_load(&frames_done);
+    for (unsigned long i = 0; i < n && i < TRACE_MAX; i++) {
+        const FrameTrace *t = &trace[i];
+        fprintf(f, "%lu %.3f %.3f %.3f %.3f %u %u %.3f %.3f %.3f %.3f\n", i, t->wall, t->cpu, t->ahead, t->sync, t->nsync,
+                t->why, t->r_wall, t->r_cpu, t->r_present, t->r_pipe);
+    }
+    fclose(f);
+    LOG(LOG_ALWAYS, "vk: frame trace of %lu frames written to %s", n < TRACE_MAX ? n : TRACE_MAX, trace_path);
 }
 
 void vk_stop(void)
@@ -459,9 +610,12 @@ void vk_stop(void)
     pthread_mutex_unlock(&lk);
     pthread_join(thread, NULL);
     on = 0;
+    trace_write();
     gfx_unlock();
     LOG(LOG_ALWAYS, "vk: render thread: %lu frames; the game thread waited for it %lu times (%.0f ms) to catch "
-        "up and %lu times (%.0f ms) a frame ahead", atomic_load(&frames_done), syncs, sync_ms, aheads, ahead_ms);
+        "up and %lu times (%.0f ms) a frame ahead; %lu textures written meanwhile (kept for it)", atomic_load(&frames_done),
+        syncs, sync_ms, aheads, ahead_ms, snaps_made);
+    snaps_free_done(1);
 }
 
 /* ------------------------------------------------------------------ the calls */
@@ -660,6 +814,17 @@ void vk_present(Surface *src, const int *rect)
     memcpy(p + 32, gfx_gamma, sizeof gfx_gamma);
     unsigned long n = atomic_fetch_add(&frames_sent, 1) + 1;
     publish();
+    FrameTrace *tr = trace && n - 1 < TRACE_MAX ? &trace[n - 1] : NULL;
+    if (tr) {                           /* this frame's game side: since the last present (before its wait) */
+        double w = now_real_ms(), cpu = thread_cpu_now();
+        tr->wall = (float)(tr_wall0 ? w - tr_wall0 : 0);
+        tr->cpu = (float)(tr_cpu0 ? cpu - tr_cpu0 : 0);
+        tr->sync = (float)(sync_ms - tr_sync0);
+        tr->nsync = (uint16_t)(syncs - tr_syncs0);
+        tr->why = (uint16_t)tr_why;
+        tr_cpu0 = cpu, tr_sync0 = sync_ms, tr_syncs0 = syncs, tr_why = 0;
+    }
+    double ahead0 = ahead_ms;
     /* at most a frame ahead of the render thread: its previous one shown before this one's draws go on */
     if (n - atomic_load(&frames_done) > 1) {
         double t0 = now_real_ms();
@@ -676,6 +841,10 @@ void vk_present(Surface *src, const int *rect)
         atomic_store(&waiting, 0);
         pthread_mutex_unlock(&lk);
         ahead_ms += now_real_ms() - t0;
+    }
+    if (tr) {                           /* (the next frame's time starts after the wait) */
+        tr->ahead = (float)(ahead_ms - ahead0);
+        tr_wall0 = now_real_ms();
     }
 }
 
@@ -844,37 +1013,54 @@ void vk_cpu_access(Surface *s, int write)
     if (on) {
         if (!s->vk_seen)
             return;                     /* (never named to the renderer: no GPU copy) */
+        /* a texture: the GPU never draws into one, so nothing comes back; a write keeps a copy of its
+           pixels for the calls made so far (the render thread may not have read them yet) */
+        if ((s->caps & DDSCAPS_TEXTURE) && !(s->caps & DDSCAPS_ZBUFFER) && !getenv_snap_off()) {
+            if (!write || atomic_load(&done) >= nput || snap_take(s))
+                return;
+        }
+        sync_why = SYNC_CPU;
+        double t0 = trace ? now_real_ms() : 0;
         vk_sync();
+        if (trace)
+            LOG(LOG_ALWAYS, "frame trace: frame %lu: CPU %s of a %ux%u %u-bit surface (caps %x) waited %.2f ms",
+                atomic_load(&frames_sent), write ? "write" : "read", s->width, s->height, s->bpp * 8, s->caps,
+                now_real_ms() - t0);
     }
     vkr_cpu_access(s, write);
 }
 
 void vk_surface_destroyed(Surface *s)
 {
+    sync_why = SYNC_GONE;
     vk_sync();
     vkr_surface_destroyed(s);
 }
 
 int vk_far_mesh(const void *verts, uint32_t nv, const uint32_t *idx, uint32_t ni)
 {
+    sync_why = SYNC_FAR;
     vk_sync();
     return vkr_far_mesh(verts, nv, idx, ni);
 }
 
 int vk_shadow_terrain(const float *xyz, uint32_t nv, const uint32_t *idx, uint32_t ni)
 {
+    sync_why = SYNC_SHTERR;
     vk_sync();
     return vkr_shadow_terrain(xyz, nv, idx, ni);
 }
 
 int vk_shadow_lightmap(const uint8_t *lm)
 {
+    sync_why = SYNC_LIGHTMAP;
     vk_sync();
     return vkr_shadow_lightmap(lm);
 }
 
 void vk_options(void)
 {
+    sync_why = SYNC_OPTIONS;
     vk_sync();
     vkr_options();
 }

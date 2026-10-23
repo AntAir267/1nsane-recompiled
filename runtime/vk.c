@@ -26,6 +26,7 @@
 #include <errno.h>
 #include <execinfo.h>
 #include <math.h>
+#include <pthread.h>
 #include <stdlib.h>
 #include <string.h>
 #include <strings.h>
@@ -447,6 +448,7 @@ static int hl_log, hl_logged;     /* INSANE_HL_LOG=1: the light the terrain and 
 static void beams_cull(uint32_t cw, uint32_t ch);
 static GpuImg *sm_noise;          /* (the volumetric smoke's tiled 3D noise: VOLUMETRIC's air takes it too) */
 static void sm_noise_make(void);
+static void sm_noise_start(void);
 static GpuImg *att_sh[3];         /* the shadows' images (resolve.frag): T, a pixel per 1 x 1 (2 x 2 with 4X AA);
                                      U and its filtered copy, half T's size */
 static int sh_soft = 1;           /* INSANE_SH_SOFT=0: hard edges */
@@ -1587,6 +1589,8 @@ static double pipe_ms, pipe_max_ms;
 static unsigned pipe_n;
 static size_t pcache_loaded;
 
+double vkr_pipe_ms(void) { return pipe_ms; }      /* (vkthread.c's frame trace) */
+
 static void pcache_path(char *p, size_t n)
 {
     snprintf(p, n, "%s/cache/pipelines.bin", user_dir);
@@ -1950,8 +1954,23 @@ static const uint32_t *lut16(const Surface *s)
     return l->lut;
 }
 
+/* a pixel of s, from the render thread's copy of it when the game has written it since (vkr.h vk_snap_pixels) */
+static uint32_t snap_read(const Surface *s, const uint8_t *snap, uint32_t x, uint32_t y)
+{
+    if (!snap)
+        return surf_read(s, x, y);
+    const uint8_t *p = snap + (size_t)y * s->pitch + (size_t)x * s->bpp;
+    switch (s->bpp) {
+    case 1: return p[0];
+    case 2: return (uint32_t)(p[0] | p[1] << 8);
+    case 3: return (uint32_t)(p[0] | p[1] << 8 | p[2] << 16);
+    default: return (uint32_t)(p[0] | p[1] << 8 | p[2] << 16 | (uint32_t)p[3] << 24);
+    }
+}
+
 static void convert_rows(const Surface *s, uint8_t *dst)
 {
+    const uint8_t *snap = vk_snap_pixels(s, NULL);
     int direct = s->bpp == 4 && s->pf[4] == 0xff0000 && s->pf[5] == 0xff00 && s->pf[6] == 0xff &&
                  (PF_FLAGS(s) & DDPF_ALPHAPIXELS) && s->pf[7] == 0xff000000u;
     int xrgb = s->bpp == 4 && s->pf[4] == 0xff0000 && s->pf[5] == 0xff00 && s->pf[6] == 0xff &&
@@ -1959,7 +1978,7 @@ static void convert_rows(const Surface *s, uint8_t *dst)
     const uint32_t *lut = s->bpp == 2 ? lut16(s) : NULL;
     for (uint32_t y = 0; y < s->height; y++) {
         uint32_t *o = (uint32_t *)(dst + (size_t)y * s->width * 4);
-        const uint8_t *row = (const uint8_t *)gptr(s->mem + y * s->pitch);
+        const uint8_t *row = snap ? snap + (size_t)y * s->pitch : (const uint8_t *)gptr(s->mem + y * s->pitch);
         if (direct) {
             memcpy(o, row, (size_t)s->width * 4);
         } else if (lut) {
@@ -1972,7 +1991,7 @@ static void convert_rows(const Surface *s, uint8_t *dst)
                 o[x] = p[x] | 0xff000000u;
         } else {
             for (uint32_t x = 0; x < s->width; x++)
-                o[x] = pix_decode(s, surf_read(s, x, y));
+                o[x] = pix_decode(s, snap_read(s, snap, x, y));
         }
     }
 }
@@ -1985,6 +2004,7 @@ static uint64_t cut_tiles(const Surface *s, float *frac)
     if (!(PF_FLAGS(s) & DDPF_ALPHAPIXELS) || !s->width || !s->height)
         return 0;
     uint32_t ncut = 0;
+    const uint8_t *snap = vk_snap_pixels(s, NULL);
     const uint32_t *lut = s->bpp == 2 ? lut16(s) : NULL;
     int direct = s->bpp == 4 && s->pf[7] == 0xff000000u;
     uint32_t w = s->width, h = s->height;
@@ -1997,10 +2017,10 @@ static uint64_t cut_tiles(const Surface *s, float *frac)
             x1 = x1 > x0 ? x1 : x0 + 1;
             uint32_t acc = 0xffffffffu;   /* alpha's top bit stays only if every texel has it */
             for (uint32_t y = y0; y < y1 && y < h; y++) {
-                const uint8_t *row = (const uint8_t *)gptr(s->mem + y * s->pitch);
+                const uint8_t *row = snap ? snap + (size_t)y * s->pitch : (const uint8_t *)gptr(s->mem + y * s->pitch);
                 for (uint32_t x = x0; x < x1 && x < w; x++) {
                     uint32_t v = direct ? ((const uint32_t *)row)[x] : lut ? lut[((const uint16_t *)row)[x]]
-                                                                             : pix_decode(s, surf_read(s, x, y));
+                                                                             : pix_decode(s, snap_read(s, snap, x, y));
                     acc &= v;
                     ncut += !(v & 0x80000000u);
                 }
@@ -2110,6 +2130,13 @@ static void upload_made_mips(GpuImg *g, const Surface *s)
     free(b);
 }
 
+/* s's dirty counter as its pixels the render thread reads were (vkr.h vk_snap_pixels) */
+static unsigned long snap_dirty(const Surface *s)
+{
+    unsigned long d;
+    return vk_snap_pixels(s, &d) ? d : s->dirty;
+}
+
 /* The GPU copy of a texture (or a 2D source surface), refreshed from program memory. */
 static GpuImg *tex_sync(Surface *s)
 {
@@ -2143,26 +2170,30 @@ static GpuImg *tex_sync(Surface *s)
         s->gpu = g;
     }
     if (g->made_mips) {
-        if (g->uploaded[0] && g->dirty[0] == s->dirty)
+        unsigned long d0 = snap_dirty(s);
+        if (g->uploaded[0] && g->dirty[0] == d0)
             return g;
         barrier(g, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
         upload_made_mips(g, s);
-        g->dirty[0] = s->dirty;
+        g->dirty[0] = d0;
         g->uploaded[0] = 1;
         barrier(g, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
         return g;
     }
     int need = 0;
-    for (uint32_t i = 0; i < n; i++)
-        if (!g->uploaded[i] || g->dirty[i] != lv[i]->dirty)
+    unsigned long dv[16];
+    for (uint32_t i = 0; i < n; i++) {
+        dv[i] = snap_dirty(lv[i]);
+        if (!g->uploaded[i] || g->dirty[i] != dv[i])
             need = 1;
+    }
     if (!need)
         return g;
     barrier(g, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
     for (uint32_t i = 0; i < n; i++)
-        if (!g->uploaded[i] || g->dirty[i] != lv[i]->dirty) {
+        if (!g->uploaded[i] || g->dirty[i] != dv[i]) {
             upload_level(g, i, lv[i]);
-            g->dirty[i] = lv[i]->dirty;
+            g->dirty[i] = dv[i];
             g->uploaded[i] = 1;
         }
     barrier(g, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
@@ -2963,6 +2994,7 @@ static int init(void)
     }
     vkGetDeviceQueue(dev, qfam, 0, &queue);
     pcache_open();
+    sm_noise_start();
     if (rt_ok) {
         p_create_as = (PFN_vkCreateAccelerationStructureKHR)vkGetDeviceProcAddr(dev, "vkCreateAccelerationStructureKHR");
         p_destroy_as = (PFN_vkDestroyAccelerationStructureKHR)vkGetDeviceProcAddr(dev, "vkDestroyAccelerationStructureKHR");
@@ -3405,9 +3437,10 @@ static void tex_mean(const Surface *s, float *out)
 {
     double a[3] = {0, 0, 0};
     int n = 0;
+    const uint8_t *snap = vk_snap_pixels(s, NULL);
     for (uint32_t j = 0; j < 32 && s->width && s->height; j++)
         for (uint32_t i = 0; i < 32; i++) {
-            uint32_t v = pix_decode(s, surf_read(s, (2 * i + 1) * s->width / 64, (2 * j + 1) * s->height / 64));
+            uint32_t v = pix_decode(s, snap_read(s, snap, (2 * i + 1) * s->width / 64, (2 * j + 1) * s->height / 64));
             a[0] += (v >> 16) & 255;
             a[1] += (v >> 8) & 255;
             a[2] += v & 255;
@@ -4988,6 +5021,7 @@ static const SmCell *sm_cell(const Surface *s, const float *u)
     y1 = y1 > (int)s->height ? (int)s->height : y1;
     if (x1 - x0 < 2 || y1 - y0 < 2)
         return e;
+    const uint8_t *snap = vk_snap_pixels(s, NULL);
     int sx = (x1 - x0 + 47) / 48, sy = (y1 - y0 + 47) / 48;
     double m0 = 0, mx = 0, my = 0, mr = 0, hw = (x1 - x0) * 0.5, hh = (y1 - y0) * 0.5;
     for (int pass = 0; pass < 3; pass++) {
@@ -4996,7 +5030,7 @@ static const SmCell *sm_cell(const Surface *s, const float *u)
         int cnt = 0;
         for (int y = y0; y < y1; y += sy)
             for (int x = x0; x < x1; x += sx) {
-                double a = (double)(pix_decode(s, surf_read(s, (uint32_t)x, (uint32_t)y)) >> 24) / 255.0;
+                double a = (double)(pix_decode(s, snap_read(s, snap, (uint32_t)x, (uint32_t)y)) >> 24) / 255.0;
                 double dx = (x + 0.5 - cx) / hw, dy = (y + 0.5 - cy) / hh;
                 if (pass == 0) {
                     m0 += a;
@@ -5260,9 +5294,13 @@ static float sm_perlin(int x, int y, int z, int f, int seed)
     return e + s * (g - e);
 }
 
-static void sm_noise_make(void)
+/* its texels (272 x 136: 32 slices of 34 x 34, a texel of border each side), about 30 ms of the CPU: worked
+   out on a thread of their own while the game starts (sm_noise_start), not in the frame that first needs them */
+enum { SM_N = 32, SM_TW = 272, SM_TH = 136 };
+static void *sm_noise_pixels(void *unused)
 {
-    enum { N = 32, TW = 272, TH = 136 };
+    (void)unused;
+    enum { N = SM_N, TW = SM_TW, TH = SM_TH };
     float *ch = malloc(sizeof(float) * 4 * N * N * N);
     uint8_t *img = calloc(TW * TH, 4);
     if (!ch || !img)
@@ -5290,6 +5328,24 @@ static void sm_noise_make(void)
                 for (int k = 0; k < 4; k++)
                     o[k] = (uint8_t)lroundf(255.0f * (v[k] - lo[k]) / fmaxf(hi[k] - lo[k], 1e-6f));
             }
+    free(ch);
+    return img;
+}
+
+static pthread_t sm_noise_thr;
+static int sm_noise_started;
+
+static void sm_noise_start(void)
+{
+    sm_noise_started = !pthread_create(&sm_noise_thr, NULL, sm_noise_pixels, NULL);
+}
+
+static void sm_noise_make(void)
+{
+    enum { TW = SM_TW, TH = SM_TH };
+    void *r = NULL;
+    uint8_t *img = sm_noise_started && !pthread_join(sm_noise_thr, &r) ? r : sm_noise_pixels(NULL);
+    sm_noise_started = 0;
     sm_noise = img_new(K_TEX, TW, TH, 1, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT);
     end_rendering();
     barrier(sm_noise, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
@@ -5301,7 +5357,6 @@ static void sm_noise_make(void)
                             .imageExtent = {TW, TH, 1}};
     vkCmdCopyBufferToImage(cb, buf, sm_noise->image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &rg);
     barrier(sm_noise, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
-    free(ch);
     free(img);
 }
 
