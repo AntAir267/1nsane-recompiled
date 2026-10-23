@@ -104,8 +104,8 @@ cp "$R"/lib/*.a "$B/lib/"
 cp runtime/cpu.h runtime/runtime.h "$B/include/"
 cp builds/gog_1_0.py builds/gog_1_0.manifest.sha256 "$B/builds/"
 sha256sum gen/funcs.h | cut -c1-64 > "$B/FUNCS_SHA256"
-echo "1nsane-recompiled $(date -u +%Y-%m-%d) $("$GIT" rev-parse --short HEAD) windows" > "$B/VERSION"
-
+REL=$(cat tools/release/VERSION)        # (the release: 0.1.1-alpha; the launcher shows it)
+echo "1nsane-recompiled $REL $(date -u +%Y-%m-%d) $("$GIT" rev-parse --short HEAD) windows" > "$B/VERSION"
 echo "== beside the game: DLSS's library, 7-Zip and libarchive (with the MSYS2 libraries they use), ffmpeg"
 [ -f build/nvngx_dlss.dll ] && cp build/nvngx_dlss.dll "$B/bin/"
 for x in /ucrt64/bin/7z.exe /ucrt64/bin/7z.dll /ucrt64/bin/libarchive-13.dll; do
@@ -202,7 +202,8 @@ The .sig files beside them are MSYS2's signatures.
 EOF
 
 echo "== zip"
-rm -f "$OUT/1NSANE_Recompiled-windows-x86_64.zip"
-(cd "$OUT" && 7z a -tzip -mx=7 -bso0 -bsp0 1NSANE_Recompiled-windows-x86_64.zip 1nsane-recompiled)
-(cd "$OUT" && sha256sum 1NSANE_Recompiled-windows-x86_64.zip > SHA256SUMS && cd sources && sha256sum * >> ../SHA256SUMS)
-ls -la "$OUT/1NSANE_Recompiled-windows-x86_64.zip" "$OUT/sources"
+ZIP=1NSANE_Recompiled-$REL-windows-x86_64.zip
+rm -f "$OUT"/1NSANE_Recompiled-*windows-x86_64.zip
+(cd "$OUT" && 7z a -tzip -mx=7 -bso0 -bsp0 "$ZIP" 1nsane-recompiled)
+(cd "$OUT" && sha256sum "$ZIP" > SHA256SUMS && cd sources && sha256sum * >> ../SHA256SUMS)
+ls -la "$OUT/$ZIP" "$OUT/sources"
