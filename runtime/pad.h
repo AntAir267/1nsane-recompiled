@@ -14,7 +14,7 @@ enum { PAD_LX, PAD_LY, PAD_RX, PAD_RY, PAD_LT, PAD_RT, PAD_AXES };
    the axes X Y Z U V and has no name for the sixth), D-pad as POV 0, then the buttons in SDL
    order without the four D-pad ones: 0 A, 1 B, 2 X, 3 Y, 4 Back, 5 Guide, 6 Start, 7 left stick,
    8 right stick, 9 LB, 10 RB, 11 Misc, 12-15 paddles. */
-int pad_attach(const char *id, const char *name);   /* returns the joystick slot, -1 if none free */
+int pad_attach(const char *id, const char *name);   /* returns the controller's number, -1 if none free */
 void pad_detach(int slot);
 void pad_axis(int slot, int axis, int value);        /* sticks -32768..32767 (+ = right/down), triggers 0..32767 */
 void pad_button(int slot, int button, int down);
@@ -29,7 +29,9 @@ int pad_count(void);                                  /* controllers connected *
    "900:A*10,1600:LX=-32768*60,1700:RT=32767*300". Buttons: A B X Y BACK GUIDE START LS RS LB
    RB UP DOWN LEFT RIGHT (the D-pad); axes: LX LY RX RY LT RT (back to rest after the hold).
    "frame:PLUG", "frame:UNPLUG", "frame:PLUG2" (another controller, swapped in): if the first
-   of these plugs one in, there is no controller at start-up.
+   of these plugs one in, there is no controller at start-up. "frame:ADD": one more controller
+   beside the one there, which the inputs after it go to (every controller drives the game's one
+   joystick: pad.c).
    pad_init also reads controller_deadzone from options.txt; call it before the game starts. */
 void pad_init(void);
 void pad_frame(unsigned long frame);                 /* per presented frame, from input_frame */

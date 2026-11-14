@@ -67,11 +67,15 @@ static SDL_Gamepad *pad_of_slot[MAXPADS];
 
 static int rumble_on = 1;            /* Enhanced option "rumble" */
 
+/* (every controller drives the game's one joystick, pad.c: they all rumble) */
 static void rumble(int slot, uint16_t low, uint16_t high, uint32_t ms)
 {
-    if (!rumble_on || slot < 0 || slot >= MAXPADS || !pad_of_slot[slot])
+    (void)slot;
+    if (!rumble_on)
         return;
-    SDL_RumbleGamepad(pad_of_slot[slot], low, high, ms == 0xffffffffu ? 0xffffffffu : ms);
+    for (int k = 0; k < MAXPADS; k++)
+        if (pad_of_slot[k])
+            SDL_RumbleGamepad(pad_of_slot[k], low, high, ms == 0xffffffffu ? 0xffffffffu : ms);
 }
 
 /* ------------------------------------------------------------------ controllers (pad.c) */
@@ -101,7 +105,7 @@ static void gamepad_added(SDL_JoystickID id)
     snprintf(key, sizeof key, "%s/%s", guid, serial ? serial : "");
     const char *name = SDL_GetGamepadName(g);
     int slot = pad_attach(key, name ? name : "Controller");
-    LOG(LOG_INPUT, "controller \"%s\" connected as joystick %d", name ? name : "?", slot);
+    LOG(LOG_INPUT, "controller \"%s\" connected (controller %d)", name ? name : "?", slot);
     if (slot >= 0 && slot < MAXPADS)
         pad_of_slot[slot] = g;
     SDL_SetPointerProperty(SDL_GetGamepadProperties(g), "insane.slot", (void *)(intptr_t)(slot + 1));
