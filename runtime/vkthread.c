@@ -864,6 +864,12 @@ void vk_flip(Surface *s, Surface *t)
 void vk_far_draw(const D3DState *st, const TnlConst *k, uint32_t first, uint32_t count, int32_t vbase)
 {
     tnl_count++;
+    /* asked here, on the game side, with the game side's state: the render thread asked it itself, of
+       wherever the game was by then (a frame ahead at a high frame rate, drawing the next frame's HUD,
+       which says no), and left out the far terrain, every copy of the map, for that frame (Ant: "the
+       entire repeated map copies flicker", at 165 Hz) */
+    if (!vk_tnl_ok(st, 16))
+        return;
     if (!going()) {
         ctx_inline();
         vkr_far_draw(st, k, first, count, vbase);
@@ -1016,6 +1022,15 @@ void vk_cpu_access(Surface *s, int write)
         /* a texture: the GPU never draws into one, so nothing comes back; a write keeps a copy of its
            pixels for the calls made so far (the render thread may not have read them yet) */
         if ((s->caps & DDSCAPS_TEXTURE) && !(s->caps & DDSCAPS_ZBUFFER) && !getenv_snap_off()) {
+            static int texw_log = -1;   /* INSANE_TEXW_LOG=1: each texture write while the renderer is on (the
+                                           flicker hunt): which, and whether a copy was kept for the calls before */
+            if (texw_log < 0)
+                texw_log = getenv("INSANE_TEXW_LOG") != NULL;
+            if (write && texw_log) {
+                int behind = atomic_load(&done) < nput;
+                LOG(LOG_ALWAYS, "texture write: frame %lu: surface %p %ux%u caps %x dirty %lu, render thread %s",
+                    frame_count, (void *)s, s->width, s->height, s->caps, s->dirty, behind ? "behind: copy kept" : "caught up");
+            }
             if (!write || atomic_load(&done) >= nput || snap_take(s))
                 return;
         }

@@ -117,6 +117,7 @@ static int fade_on;         /* distance fade */
 static int allowed, ddlog;
 static int far_log;         /* INSANE_FAR_LOG (the far objects, below) */
 static int main_view;       /* inside 0x465950 for the race's main view */
+static int far_draws_last;  /* the far terrain's draws in the last main view (INSANE_COPY_LOG) */
 static int fading;          /* ... with the distance fade */
 
 /* the visibility level's range */
@@ -1393,6 +1394,8 @@ static Surface *tile_texture(int t)
     uint32_t h = R32(TILE_TEX + 4 * (uint32_t)t), obj = h ? R32(h + 0x7c) : 0;
     Surface *tex = obj ? surface_get(obj) : NULL;
     if (tex && !tex->dead) {
+        if (tile_seen[t] != tex && getenv("INSANE_COPY_LOG"))
+            LOG(LOG_ALWAYS, "copies: frame %lu: tile %d's texture is surface %p", frame_count, t, (void *)tex);
         tile_seen[t] = tex;
         return tex;
     }
@@ -1700,6 +1703,7 @@ static void far_draw(void)
             if (ox == 0 && oz == 0)
                 ndraws += far_skirt(&st, &k, hx0, hx1, hz0, hz1);
         }
+    far_draws_last = ndraws;
     static int most;
     if (ddlog && ndraws > most) {
         most = ndraws;
@@ -2033,6 +2037,19 @@ static int world_draw_hook(CPU *c)
         return 0;
     }
     fade_gen++;
+    static int copy_log = -1;   /* INSANE_COPY_LOG=1: each main view, the last one's far terrain draws and
+                                   copies, and this one's camera, factor and far plane (the flicker hunt) */
+    if (copy_log < 0)
+        copy_log = getenv("INSANE_COPY_LOG") ? atoi(getenv("INSANE_COPY_LOG")) : 0;
+    if (copy_log) {
+        static unsigned long last_c, last_d;
+        LOG(LOG_ALWAYS, "copies: frame %lu: last view %d far draws, %lu copies in %lu draws; camera %.0f %.0f %.0f, "
+            "factor %.3f, horizon %d", frame_count, far_draws_last, st_copies - last_c, st_copy_draws - last_d,
+            (int32_t)R32(CAM_X) / 65536.0, (int32_t)R32(CAM_Y) / 65536.0, (int32_t)R32(CAM_Z) / 65536.0, factor(),
+            horizon_on);
+        last_c = st_copies;
+        last_d = st_copy_draws;
+    }
     static uint32_t last_cam[2];
     cam_cut = abs((int32_t)(R32(CAM_X) - last_cam[0])) > (2 << 24) || abs((int32_t)(R32(CAM_Z) - last_cam[1])) > (2 << 24);
     last_cam[0] = R32(CAM_X);
@@ -2049,6 +2066,17 @@ static int world_draw_hook(CPU *c)
     }
     obj_range = vis_range();
     box_half = obj_range * 8.0;
+    if (ddlog) {                /* the game's own automatic detail (0x41e320, every 5th frame: the frame rate
+                                   over 16 frames under 32 steps the "AUTO" settings down a level, over 48
+                                   up): its step, the frame rate it saw, object and map detail */
+        static int last_step = -1;
+        int st = (int)R32(0x9eed50u);
+        if (st != last_step)
+            LOG(LOG_ALWAYS, "drawdist: the game's automatic detail step %d (frame rate %.1f; object detail %d, map "
+                "detail %d) at frame %lu", st, RF32(0x1c11eb4u), (int)R32(0x4c5eb8u), (int)R32(0x4c5ec0u),
+                frame_count);
+        last_step = st;
+    }
     if (ddlog) {                /* the game's own visibility level (AUTO changes it with the frame rate) */
         static int last_vis = -1;
         int v = (int)R32(VIS_LEVEL);

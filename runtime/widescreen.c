@@ -39,6 +39,12 @@ static int perspective_hook(CPU *c)
             fov, asp, frame_count);
     (void)x; (void)y; (void)w; (void)h;
     drawdist_camera(a);                     /* a longer view's far plane (drawdist.c) */
+    static float near_scale = -1;           /* INSANE_NEAR_SCALE=<k>: the race camera's near plane times k (a test of
+                                               depth precision: what changes is where depth fought) */
+    if (near_scale < 0)
+        near_scale = getenv("INSANE_NEAR_SCALE") ? (float)atof(getenv("INSANE_NEAR_SCALE")) : 0;
+    if (near_scale > 0 && rdf(a + 28) >= 20000.0f)
+        wrf(a + 24, rdf(a + 24) * near_scale);
     if (!ws_on || ws_aspect <= 4.0f / 3.0f + 0.001f)
         return 0;
     /* every 4:3 camera (menus' and races'): the renderer widens its viewport to match */

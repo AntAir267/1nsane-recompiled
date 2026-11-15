@@ -4082,7 +4082,7 @@ int vkr_far_mesh(const void *verts, uint32_t nv, const uint32_t *idx, uint32_t n
    and the transform k (GPU transform and lighting) */
 void vkr_far_draw(const D3DState *st, const TnlConst *k, uint32_t first, uint32_t count, int32_t vbase)
 {
-    if (!far_mesh.buf || !count || !vk_tnl_ok(st, 16))
+    if (!vk_on() || !far_mesh.buf || !count)     /* (vk_tnl_ok was asked by vk_far_draw, on the game side) */
         return;
     struct FarBind b = {first, count, vbase};
     double t = wall_ms();
