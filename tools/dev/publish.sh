@@ -26,6 +26,12 @@ cp -a "$tmp"/. "$pub"/
 rm -rf "$tmp"
 if [ -n "$last" ]; then log=$(git log --format='- %s' "$last..master" --no-merges); else log="- First public version"; fi
 git -C "$pub" add -A
+# the toolkit (third_party/antistatic): git archive leaves submodules out, so the public repository
+# gets the same pin (a gitlink to the public AntiStatic repository, .gitmodules) by hand
+if sub=$(git rev-parse -q --verify "master:third_party/antistatic" 2>/dev/null); then
+    grep -q "AntiStatic-Recomp-Toolkit-internal" "$pub/.gitmodules" 2>/dev/null && { echo "refused: .gitmodules names the private toolkit"; exit 1; }
+    git -C "$pub" update-index --add --cacheinfo "160000,$sub,third_party/antistatic"
+fi
 git -C "$pub" -c user.name="$name" -c user.email="$mail" commit -q -m "$(printf 'Update from the private repository\n\n%s\n\nPrivate master: %s\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\n' "$log" "$head")"
 git -C "$pub" push -q origin HEAD:main
 echo "published $head"

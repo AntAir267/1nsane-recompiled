@@ -1,6 +1,6 @@
 /* 1NSANE: Recompiled's launcher and first-run setup.
 
-   The download holds no part of the game: this launcher, the translator (tools/recomp.py, frozen),
+   The download holds no part of the game: this launcher, the translator (AntiStatic's recomp.py, frozen),
    a C compiler (Zig), the runtime built ahead of time (lib/libruntime.a, lib/libSDL3.a and the
    headers the generated code includes) and the files describing the GOG release (builds/). The
    first time it runs it finds the player's copy of the game (an installed GOG folder, or the GOG
@@ -539,7 +539,8 @@ static int build_game(void)
     largv[k++] = "-lvulkan-1", largv[k++] = "-lz", largv[k++] = "-liconv", largv[k++] = "-luser32",
     largv[k++] = "-lgdi32", largv[k++] = "-lwinmm", largv[k++] = "-limm32", largv[k++] = "-lole32",
     largv[k++] = "-loleaut32", largv[k++] = "-lversion", largv[k++] = "-luuid", largv[k++] = "-ladvapi32",
-    largv[k++] = "-lsetupapi", largv[k++] = "-lshell32", largv[k++] = "-ldinput8", largv[k++] = "-lpthread",
+    largv[k++] = "-lsetupapi", largv[k++] = "-lcfgmgr32", largv[k++] = "-lshell32", largv[k++] = "-lpsapi",
+    largv[k++] = "-ldbghelp", largv[k++] = "-ldinput8", largv[k++] = "-lpthread",
     largv[k++] = "-static", largv[k++] = "-Wl,--stack,8388608", largv[k++] = "-mwindows";
 #else
     largv[k++] = "-L", largv[k++] = stubs;

@@ -45,6 +45,7 @@
 #include "image.h"
 #include "input.h"
 #include "mods.h"
+#include "padgame.h"
 #include "options.h"
 #include "pad.h"
 #include "widescreen.h"

@@ -63,6 +63,7 @@
 #include "image.h"
 #include "input.h"
 #include "pad.h"
+#include "padgame.h"
 
 #define LAYOUT_SIZE 200
 #define NAME_SIZE 32

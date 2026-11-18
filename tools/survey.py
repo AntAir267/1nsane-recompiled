@@ -1,6 +1,6 @@
 """Development helper: run discovery on Game.exe and compare with Ghidra's function list."""
 import sys, os, time, importlib.util
-sys.path.insert(0, os.path.dirname(__file__))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'third_party', 'antistatic', 'translator'))   # (AntiStatic's translator; written for 1NSANE's own, its calls may need updating)
 from pe import PE
 from x86 import Decoder
 from discover import Discovery, data_code_pointers

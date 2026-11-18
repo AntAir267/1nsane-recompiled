@@ -1061,17 +1061,16 @@ void enhanced_init(void)
     cheats_apply(NULL, 0);              /* unlocks and cheats from the start */
 }
 
-/* apply changed options in every part that has one */
-void options_changed(void)
+/* apply changed options in every part that has one: the toolkit's options_changed (options.c) does
+   the frame limit, the controllers and the window, then this */
+void port_options_changed(void)
 {
     vk_options();
     widescreen_options();
-    win_options();
     drawdist_options();
     opponents_options();
     shadows_options();
     smoke_options();
     headlights_options();
-    frame_limit_options();
     font_options();
 }

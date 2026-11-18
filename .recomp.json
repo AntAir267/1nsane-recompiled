@@ -8,7 +8,7 @@
   "project": "1NSANE: Recompiled",
   "status": "playable",
   "targets": ["Linux", "Windows"],
-  "toolchain": "Capstone",
+  "toolchain": "AntiStatic",
   "approach": "Static recompilation of Game.exe to C with our own translator; a new Windows and DirectX 7 runtime on SDL3 and Vulkan; checked frame by frame against the original code.",
   "maintainers": [{ "name": "AntAir267", "link": "https://github.com/AntAir267" }],
   "links": [{ "label": "Downloads", "url": "https://github.com/AntAir267/1nsane-recompiled/releases" }],

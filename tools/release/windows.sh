@@ -70,9 +70,10 @@ chmod +x "$R/bin/pkg-config"
 
 echo "== the game built with Zig (the runtime is what the download carries; the rest checks it)"
 rm -rf build/obj build/1nsane.exe       # (from scratch: make doesn't see changed flags)
-COMMON="-std=gnu11 -g -fno-strict-aliasing -fno-omit-frame-pointer -Iruntime -Igen -I$R/inc"
+AS=third_party/antistatic/runtime         # (AntiStatic, the shared toolkit: its runtime and translator)
+COMMON="-std=gnu11 -g -fno-strict-aliasing -fno-omit-frame-pointer -Iruntime -I$AS/win32 -I$AS/d3d7 -I$AS/cpu -Igen -I$R/inc"
 SYSLIBS="-liconv -luser32 -lgdi32 -lwinmm -limm32 -lole32 -loleaut32 -lversion -luuid -ladvapi32 -lsetupapi \
-         -lshell32 -ldinput8 -lz -lpthread"
+         -lcfgmgr32 -lshell32 -lpsapi -ldbghelp -ldinput8 -lz -lpthread"
 LIBS="-static $R/lib/libSDL3.a -L$R/lib -lfreetype $SYSLIBS -lvulkan-1 -lc++ -Wl,--stack,8388608 -mwindows"
 [ -f "$DLSS/include/nvsdk_ngx_vk.h" ] && LIBS="$LIBS $DLSS/lib/Windows_x86_64/x64/nvsdk_ngx_d.lib"
 PATH="$R/bin:$PATH" make JOBS="$JOBS" CC="$Z cc -target $T" CXX="$Z c++ -target $T -I$R/inc" SDL3="$R" \
@@ -97,11 +98,11 @@ rm -rf "$B"
 mkdir -p "$B/lib" "$B/include" "$B/builds" "$B/bin" "$B/licenses"
 
 echo "== the runtime"
-RT_OBJS=$(ls build/obj/rt_*.o build/obj/fsr2_*.o | grep -v -e rt_main_nomain)
+RT_OBJS=$(ls build/obj/rt_*.o build/obj/as_*.o build/obj/fsr2_*.o | grep -v -e as_main_nomain)
 "$Z" ar rcs "$B/lib/libruntime.a" $RT_OBJS
 cp "$R"/lib/*.a "$B/lib/"
 [ -f "$DLSS/include/nvsdk_ngx_vk.h" ] && cp "$DLSS/lib/Windows_x86_64/x64/nvsdk_ngx_d.lib" "$B/lib/"
-cp runtime/cpu.h runtime/runtime.h "$B/include/"
+cp $AS/cpu/cpu.h $AS/cpu/tables.h $AS/win32/runtime.h runtime/port.h "$B/include/"   # (what the generated C includes)
 cp builds/gog_1_0.py builds/gog_1_0.manifest.sha256 "$B/builds/"
 sha256sum gen/funcs.h | cut -c1-64 > "$B/FUNCS_SHA256"
 REL=$(cat tools/release/VERSION)        # (the release: 0.1.1-alpha; the launcher shows it)
@@ -116,9 +117,9 @@ cp "$FB/ffmpeg.exe" "$B/bin/"
 
 echo "== the translator, frozen"
 # (without the network and OpenSSL, which the translator never uses)
-pyinstaller --onefile --name translate --paths tools --distpath build/rel-dist --workpath build/rel-pyi \
+pyinstaller --onefile --name translate --paths third_party/antistatic/translator --distpath build/rel-dist --workpath build/rel-pyi \
     --specpath build/rel-pyi --log-level WARN --exclude-module ssl --exclude-module _ssl \
-    --exclude-module _hashlib --exclude-module socket tools/recomp.py
+    --exclude-module _hashlib --exclude-module socket third_party/antistatic/translator/recomp.py
 cp build/rel-dist/translate.exe "$B/"
 # the libraries packed into it (for the licences)
 pyi-archive_viewer -l build/rel-dist/translate.exe | grep -oE '[A-Za-z0-9_.+-]+\.dll' | sort -u > "$R/translate-dlls.txt"
@@ -174,6 +175,7 @@ cp "$DLSS/LICENSE.txt" "$L/DLSS/"
 cp "$ZDIR/LICENSE" "$L/Zig/"
 for d in libcxx libcxxabi libunwind; do cp "$ZDIR/lib/$d/LICENSE.TXT" "$L/Zig/$d-LICENSE.TXT"; done
 cp CREDITS.md LICENSE "$L/"
+cp third_party/antistatic/LICENSE "$L/AntiStatic-LICENSE.txt"
 
 echo "== the LGPL parts' exact sources, to publish beside the zip"
 # FFmpeg's release, and MSYS2's source packages (recipe, patches and the original source) for the

@@ -30,7 +30,8 @@ printf '#!/bin/sh\nexec %s cc -target %s "$@"\n' "$Z" "$T" > "$TOOLS/zcc"
 printf '#!/bin/sh\nexec %s c++ -target %s "$@"\n' "$Z" "$T" > "$TOOLS/zcxx"
 chmod +x "$TOOLS/zcc" "$TOOLS/zcxx"
 SYSINC="-idirafter /usr/include -idirafter /usr/include/x86_64-linux-gnu"
-COMMON="-std=gnu11 -g -fno-strict-aliasing -fno-omit-frame-pointer -Iruntime -Igen -I$SDL/include $SYSINC"
+AS=third_party/antistatic/runtime         # (AntiStatic, the shared toolkit: its runtime and translator)
+COMMON="-std=gnu11 -g -fno-strict-aliasing -fno-omit-frame-pointer -Iruntime -I$AS/win32 -I$AS/d3d7 -I$AS/cpu -Igen -I$SDL/include $SYSINC"
 
 echo "== the game built with Zig (the runtime is what the download carries; the rest checks it)"
 make JOBS="$JOBS" CC="$TOOLS/zcc -fPIE -pie -L$LIBDIR -Wl,--allow-shlib-undefined" \
@@ -42,10 +43,10 @@ rm -rf "$OUT/AppDir"
 mkdir -p "$B/lib/stubs" "$B/include" "$B/builds" "$OUT/AppDir/usr/bin"
 
 echo "== the runtime"
-RT_OBJS=$(ls build/obj/rt_*.o build/obj/fsr2_*.o | grep -v -e rt_main_nomain -e rt_platform_win)
+RT_OBJS=$(ls build/obj/rt_*.o build/obj/as_*.o build/obj/fsr2_*.o | grep -v -e as_main_nomain -e as_platform -e rt_platform_win)
 "$Z" ar rcs "$B/lib/libruntime.a" $RT_OBJS
 cp "$SDL/lib/libSDL3.a" "$B/lib/"
-cp runtime/cpu.h runtime/runtime.h "$B/include/"
+cp $AS/cpu/cpu.h $AS/cpu/tables.h $AS/win32/runtime.h runtime/port.h "$B/include/"   # (what the generated C includes)
 cp builds/gog_1_0.py builds/gog_1_0.manifest.sha256 "$B/builds/"
 sha256sum gen/funcs.h | cut -c1-64 > "$B/FUNCS_SHA256"
 REL=$(cat tools/release/VERSION)        # (the release: 0.1.1-alpha; the launcher shows it)
@@ -69,7 +70,8 @@ tar -C "$PYS/lib" --exclude=test --exclude=idlelib --exclude=tkinter --exclude=t
     --exclude='_dbm.*' -cf - python3.14 | tar -C "$B/python/lib" -xf -
 cp -r "$ROOT/third_party/pack-venv/lib/python3.14/site-packages/capstone" "$B/python/lib/python3.14/site-packages/"
 find "$B/python/lib/python3.14/site-packages/capstone" -name __pycache__ -prune -exec rm -r {} +
-cp tools/recomp.py tools/codegen.py tools/discover.py tools/pe.py tools/x86.py tools/fpustack.py "$B/tools/"
+TR=third_party/antistatic/translator
+cp $TR/recomp.py $TR/codegen.py $TR/discover.py $TR/pe.py $TR/x86.py $TR/fpustack.py $TR/simd.py $TR/eh.py $TR/image.py "$B/tools/"
 cat > "$B/translate" <<'EOF2'
 #!/bin/sh
 # Game.exe to C: tools/recomp.py on the Python beside it (-E -s: none of the player's Python settings)
@@ -100,6 +102,7 @@ echo "== the licences (every part the download carries; CREDITS.md names them)"
 L=$B/licenses
 mkdir -p "$L"
 cp CREDITS.md LICENSE "$L/"
+cp third_party/antistatic/LICENSE "$L/AntiStatic-LICENSE.txt"
 cp assets/1nsanefont/README.md "$L/1nsaneFont-README.md"
 cp third_party/SDL3-*/LICENSE.txt "$L/SDL3-LICENSE.txt"
 cp third_party/FidelityFX-FSR2/LICENSE.txt "$L/FidelityFX-FSR2-LICENSE.txt"
