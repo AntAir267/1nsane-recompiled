@@ -72,7 +72,7 @@ gen/funcs.h gen/table.c gen/stubs.c: gen/.translated ;
 gen/files.mk: gen/.translated
 	@echo 'GEN_CODE = $(sort $(wildcard gen/code_*.c))' > $@
 
-build/obj/gen_%.o: gen/%.c gen/funcs.h $(AS_RT)/cpu/cpu.h | build/obj
+build/obj/gen_%.o: gen/%.c gen/funcs.h $(wildcard $(AS_RT)/cpu/*.h) runtime/port.h | build/obj
 	$(CC) $(CFLAGS_GEN) -c $< -o $@
 
 build/obj/rt_%.o: runtime/%.c runtime/*.h $(AS_H) gen/funcs.h | build/obj
