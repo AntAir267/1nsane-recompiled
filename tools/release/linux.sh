@@ -43,10 +43,12 @@ rm -rf "$OUT/AppDir"
 mkdir -p "$B/lib/stubs" "$B/include" "$B/builds" "$OUT/AppDir/usr/bin"
 
 echo "== the runtime"
-RT_OBJS=$(ls build/obj/rt_*.o build/obj/as_*.o build/obj/fsr2_*.o | grep -v -e as_main_nomain -e as_platform -e rt_platform_win)
+# (only the objects of today's sources: build/ may still hold ones of files since moved to the toolkit)
+RT_OBJS=$(for f in runtime/*.c runtime/*.cpp; do o=build/obj/rt_$(basename "${f%.*}").o; [ -f "$o" ] && echo "$o"; done
+          ls build/obj/as_*.o build/obj/fsr2_*.o | grep -v -e as_main_nomain -e as_platform)
 "$Z" ar rcs "$B/lib/libruntime.a" $RT_OBJS
 cp "$SDL/lib/libSDL3.a" "$B/lib/"
-cp $AS/cpu/cpu.h $AS/cpu/tables.h $AS/win32/runtime.h runtime/port.h "$B/include/"   # (what the generated C includes)
+cp $AS/cpu/*.h $AS/win32/runtime.h runtime/port.h "$B/include/"   # (what the generated C includes: all the CPU headers, v0.2.46 on)
 cp builds/gog_1_0.py builds/gog_1_0.manifest.sha256 "$B/builds/"
 sha256sum gen/funcs.h | cut -c1-64 > "$B/FUNCS_SHA256"
 REL=$(cat tools/release/VERSION)        # (the release: 0.1.1-alpha; the launcher shows it)
